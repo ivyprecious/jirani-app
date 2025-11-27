@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Jirani App</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+    <div class="logo-icon">
+        <img src="{% static 'images/Jirani App Logo 1.png' %}" alt="Jirani Logo" style="width: 32px; height: 32px; object-fit: contain;">
+    </div>
+    <h1>JIRANI</h1>
+</div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-building"></i>
+                    <span>Building</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Tenants</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-parking"></i>
+                    <span>Parking</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Services</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Subcontractors</span>
+                </a>
+            </nav>
+            
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search Dialogue">
+            </div>
+            
+            <div class="contacts-list">
+                {% for request in new_requests %}
+                <div class="contact-item">
+                    <div class="contact-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-name">{{ request.resident.user.get_full_name }}</div>
+                        <div class="contact-message">{{ request.title|truncatewords:5 }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <nav class="nav-links">
+                    <a href="#" class="nav-link active">Overview</a>
+                    <a href="#" class="nav-link">Work Orders</a>
+                    <a href="#" class="nav-link">Rent</a>
+                    <a href="#" class="nav-link">Collection</a>
+                    <a href="#" class="nav-link">Access</a>
+                </nav>
+                
+                <div class="user-section">
+                    <i class="fas fa-bell"></i>
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user.get_full_name }}</div>
+                            <div class="user-role">Manager</div>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <button class="month-btn">This Month</button>
+                </div>
+            </header>
+            
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div class="left-column">
+                    <!-- Building Stats Card -->
+                    <div class="card building-card">
+                        <img src="{% static 'images/building.jpg' %}" alt="Building" class="building-image">
+                        <div class="building-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">{{ stats.total_residents }}</div>
+                                <div class="stat-label">Residents</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ stats.total_units }}</div>
+                                <div class="stat-label">Units</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ stats.vacant_units }}</div>
+                                <div class="stat-label">Vacant</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ stats.upcoming_units }}</div>
+                                <div class="stat-label">Upcoming</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 87%;"></div>
+                        </div>
+                        <div class="progress-label">Lesser by 87%</div>
+                    </div>
+                    
+                    <!-- Work Orders Chart -->
+                    <div class="card work-orders-card">
+                        <h3>Work Orders</h3>
+                        <div class="chart">
+                            <div class="bar-chart">
+                                <div class="bar" style="height: 45%;">
+                                    <span class="bar-value">{{ work_order_stats.new }}</span>
+                                </div>
+                                <div class="bar" style="height: 70%;">
+                                    <span class="bar-value">{{ work_order_stats.open }}</span>
+                                </div>
+                                <div class="bar" style="height: 30%;">
+                                    <span class="bar-value">{{ work_order_stats.in_progress }}</span>
+                                </div>
+                                <div class="bar" style="height: 15%;">
+                                    <span class="bar-value">{{ work_order_stats.delayed }}</span>
+                                </div>
+                            </div>
+                            <div class="chart-labels">
+                                <span>New</span>
+                                <span>Open</span>
+                                <span>In Progress</span>
+                                <span>Delayed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="right-column">
+                    <!-- Payment Card -->
+                    <div class="card payment-card">
+                        <h3>Payment</h3>
+                        <div class="payment-grid">
+                            <div class="payment-item">
+                                <div class="payment-amount">Ksh.{{ payment_summary.rent.amount|default:"0" }}</div>
+                                <div class="payment-label">Rent</div>
+                            </div>
+                            <div class="payment-item">
+                                <div class="payment-amount">Ksh.{{ payment_summary.additional.amount|default:"0" }}</div>
+                                <div class="payment-label">Additional Services</div>
+                            </div>
+                            <div class="payment-item">
+                                <div class="payment-amount">Ksh.{{ payment_summary.maintenance.amount|default:"0" }}</div>
+                                <div class="payment-label">Maintenance</div>
+                            </div>
+                            <div class="payment-item">
+                                <div class="payment-amount">Ksh.{{ payment_summary.debt.amount|default:"0" }}</div>
+                                <div class="payment-label error">Debt</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- New Requests Card -->
+                    <div class="card requests-card">
+                        <h3>New Requests</h3>
+                        <div class="requests-list">
+                            {% for request in new_requests %}
+                            <div class="request-item">
+                                <div class="request-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="request-info">
+                                    <div class="request-name">{{ request.resident.user.get_full_name }}</div>
+                                    <div class="request-unit">Unit {{ request.resident.unit_number }}</div>
+                                    <div class="request-text">{{ request.description|truncatewords:10 }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Delayed Work Orders -->
+                    <div class="card delayed-orders-card">
+                        <h3>Delayed Work Orders</h3>
+                        <table class="orders-table">
+                            <tbody>
+                                {% for order in delayed_orders %}
+                                <tr>
+                                    <td>{{ order.order_id }}</td>
+                                    <td>Unit {{ order.unit_number }}</td>
+                                    <td>{{ order.category }}</td>
+                                    <td>
+                                        <div class="assigned-user">
+                                            <i class="fas fa-user"></i>
+                                            {{ order.assigned_to }}
+                                        </div>
+                                    </td>
+                                    <td>{{ order.days_late }} day{{ order.days_late|pluralize }} late</td>
+                                    <td><span class="badge urgent">Urgent</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Upcoming Units -->
+                    <div class="card upcoming-units-card">
+                        <div class="card-header">
+                            <h3>Upcoming Units</h3>
+                            <a href="#" class="view-all">→</a>
+                        </div>
+                        <div class="units-grid">
+                            {% for unit in upcoming_units %}
+                            <div class="unit-item">
+                                {% if unit.image %}
+                                <img src="{{ unit.image.url }}" alt="Unit {{ unit.unit_number }}">
+                                {% else %}
+                                <div style="background: #e5e7eb; height: 100%;"></div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
