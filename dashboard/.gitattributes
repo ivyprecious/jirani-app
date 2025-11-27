@@ -1,0 +1,9 @@
+# Tell GitHub this is primarily a Python project
+*.py linguist-detectable=true
+*.html linguist-detectable=false
+*.css linguist-vendored=true
+*.js linguist-vendored=true
+
+# Ignore static files from language stats
+staticfiles/* linguist-vendored
+dashboard/static/* linguist-documentation
