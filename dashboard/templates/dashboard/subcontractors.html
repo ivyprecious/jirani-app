@@ -1,0 +1,617 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subcontractors - Jirani App</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="{% static 'images/Jirani App Logo 1.png' %}" alt="Jirani Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                </div>
+                <h1>JIRANI</h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'dashboard' %}" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-building"></i>
+                    <span>Building</span>
+                </a>
+                <a href="{% url 'tenants' %}" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Tenants</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="{% url 'parking' %}" class="nav-item">
+                    <i class="fas fa-parking"></i>
+                    <span>Parking</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Services</span>
+                </a>
+                <a href="{% url 'subcontractors' %}" class="nav-item active">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Subcontractors</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <h2 style="font-size: 24px; font-weight: 700; color: #1f2937;">Subcontractors Management</h2>
+                
+                <div class="user-section">
+                    <i class="fas fa-bell"></i>
+                    <div class="user-profile" id="userProfileBtn">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user.get_full_name }}</div>
+                            <div class="user-role">Manager</div>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">{{ user.get_full_name }}</div>
+                                <div class="user-email">{{ user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                            <span class="badge-count">3</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>Messages</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Help & Support</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'logout' %}" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Subcontractors Content -->
+            <div class="tenants-page">
+                
+                <!-- Success/Error Messages -->
+                {% if messages %}
+                    <div class="messages-container">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ message }}</span>
+                                <button class="alert-close" onclick="this.parentElement.remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.total }}</div>
+                            <div class="stat-label">Total Contractors</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #10b981;">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.active }}</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f59e0b;">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.work_orders }}</div>
+                            <div class="stat-label">Active Work Orders</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #ef4444;">
+                            <i class="fas fa-user-times"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.inactive }}</div>
+                            <div class="stat-label">Inactive</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filters and Search -->
+                <div class="tenants-toolbar">
+                    <div class="filter-buttons">
+                        <a href="?status=all&category={{ filter_category }}" class="filter-btn {% if filter_status == 'all' %}active{% endif %}">
+                            <i class="fas fa-list"></i> All
+                        </a>
+                        <a href="?status=active&category={{ filter_category }}" class="filter-btn {% if filter_status == 'active' %}active{% endif %}">
+                            <i class="fas fa-check-circle"></i> Active
+                        </a>
+                        <a href="?status=inactive&category={{ filter_category }}" class="filter-btn {% if filter_status == 'inactive' %}active{% endif %}">
+                            <i class="fas fa-times-circle"></i> Inactive
+                        </a>
+                        
+                        <!-- Category Dropdown -->
+                        <div class="category-filter">
+                            <select name="category" id="categoryFilter" onchange="filterByCategory(this.value)">
+                                <option value="all" {% if filter_category == 'all' %}selected{% endif %}>All Categories</option>
+                                <option value="plumber" {% if filter_category == 'plumber' %}selected{% endif %}>Plumber</option>
+                                <option value="electrician" {% if filter_category == 'electrician' %}selected{% endif %}>Electrician</option>
+                                <option value="hvac" {% if filter_category == 'hvac' %}selected{% endif %}>HVAC</option>
+                                <option value="cleaner" {% if filter_category == 'cleaner' %}selected{% endif %}>Cleaner</option>
+                                <option value="security" {% if filter_category == 'security' %}selected{% endif %}>Security</option>
+                                <option value="landscaper" {% if filter_category == 'landscaper' %}selected{% endif %}>Landscaper</option>
+                                <option value="painter" {% if filter_category == 'painter' %}selected{% endif %}>Painter</option>
+                                <option value="carpenter" {% if filter_category == 'carpenter' %}selected{% endif %}>Carpenter</option>
+                                <option value="pest_control" {% if filter_category == 'pest_control' %}selected{% endif %}>Pest Control</option>
+                                <option value="general" {% if filter_category == 'general' %}selected{% endif %}>General</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="search-actions">
+                        <form method="GET" class="search-form" id="searchForm">
+                            <i class="fas fa-search"></i>
+                            <input type="hidden" name="status" value="{{ filter_status }}">
+                            <input type="hidden" name="category" value="{{ filter_category }}">
+                            <input type="text" name="search" placeholder="Search contractors..." value="{{ search_query }}" id="searchInput">
+                            <button type="submit" style="display: none;"></button>
+                        </form>
+                        <button class="btn-primary" id="addSubcontractorBtn">
+                            <i class="fas fa-plus"></i> Add Contractor
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Subcontractors Table -->
+                <div class="tenants-table-container">
+                    <table class="tenants-table">
+                        <thead>
+                            <tr>
+                                <th>Contractor</th>
+                                <th>Category</th>
+                                <th>Phone</th>
+                                <th>Rating</th>
+                                <th>Status</th>
+                                <th style="width: 180px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contractor in subcontractors %}
+                            <tr data-contractor-id="{{ contractor.id }}" 
+                                data-name="{{ contractor.name }}"
+                                data-email="{{ contractor.email }}"
+                                data-company="{{ contractor.company_name }}"
+                                data-phone="{{ contractor.phone }}"
+                                data-category="{{ contractor.category }}"
+                                data-rating="{{ contractor.rating }}"
+                                data-work-orders="{{ contractor.active_work_orders_count }}"
+                                data-status="{{ contractor.status }}"
+                                data-notes="{{ contractor.notes }}">
+                                <td>
+                                    <div class="tenant-info">
+                                        <div class="tenant-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                        <div class="tenant-details">
+                                            <div class="tenant-name">{{ contractor.name }}</div>
+                                            <div class="tenant-email">{{ contractor.email }}</div>
+                                            <div class="tenant-email" style="margin-top: 2px; font-size: 12px;">{{ contractor.company_name }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="category-badge category-{{ contractor.category }}">
+                                        {% if contractor.category == 'plumber' %}
+                                            <i class="fas fa-wrench"></i>
+                                        {% elif contractor.category == 'electrician' %}
+                                            <i class="fas fa-bolt"></i>
+                                        {% elif contractor.category == 'hvac' %}
+                                            <i class="fas fa-fan"></i>
+                                        {% elif contractor.category == 'cleaner' %}
+                                            <i class="fas fa-broom"></i>
+                                        {% elif contractor.category == 'security' %}
+                                            <i class="fas fa-shield-alt"></i>
+                                        {% elif contractor.category == 'landscaper' %}
+                                            <i class="fas fa-leaf"></i>
+                                        {% elif contractor.category == 'painter' %}
+                                            <i class="fas fa-paint-roller"></i>
+                                        {% elif contractor.category == 'carpenter' %}
+                                            <i class="fas fa-hammer"></i>
+                                        {% elif contractor.category == 'pest_control' %}
+                                            <i class="fas fa-bug"></i>
+                                        {% else %}
+                                            <i class="fas fa-tools"></i>
+                                        {% endif %}
+                                        {{ contractor.get_category_display }}
+                                    </span>
+                                </td>
+                                <td>{{ contractor.phone }}</td>
+                                <td>
+                                    <div class="rating-display">
+                                        <i class="fas fa-star" style="color: #fbbf24;"></i>
+                                        <strong>{{ contractor.rating }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if contractor.status == 'active' %}
+                                        <span class="status-badge active">
+                                            <i class="fas fa-check-circle"></i> Active
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge moved-out">
+                                            <i class="fas fa-times-circle"></i> Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view-contractor-btn" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon edit-contractor-btn" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon" title="Message">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                        <button class="btn-icon btn-delete delete-contractor-btn" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px; color: #6b7280;">
+                                    <i class="fas fa-user-tie" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                                    <div>No subcontractors found</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Subcontractor Modal -->
+    <div class="modal" id="addSubcontractorModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Add New Subcontractor</h2>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" action="{% url 'add_subcontractor' %}" class="modal-form">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Contractor Name *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="company_name">Company Name *</label>
+                        <input type="text" id="company_name" name="company_name" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="plumber">Plumber</option>
+                            <option value="electrician">Electrician</option>
+                            <option value="hvac">HVAC Technician</option>
+                            <option value="cleaner">Cleaning Services</option>
+                            <option value="security">Security</option>
+                            <option value="landscaper">Landscaping</option>
+                            <option value="painter">Painter</option>
+                            <option value="carpenter">Carpenter</option>
+                            <option value="pest_control">Pest Control</option>
+                            <option value="general">General Maintenance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone *</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+254712345678" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status">Status *</label>
+                        <select id="status" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes (Optional)</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Additional information about the contractor..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Add Contractor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Contractor Details Modal -->
+    <div class="modal" id="viewContractorModal">
+        <div class="modal-overlay" id="viewModalOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Contractor Details</h2>
+                <button class="modal-close" id="closeViewModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="tenant-details-content">
+                <div class="detail-section">
+                    <div class="detail-avatar-large" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h3 class="detail-name" id="detailName"></h3>
+                    <p class="detail-email" id="detailEmail"></p>
+                </div>
+                
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <i class="fas fa-building"></i>
+                        <div>
+                            <span class="detail-label">Company</span>
+                            <span class="detail-value" id="detailCompany"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-tools"></i>
+                        <div>
+                            <span class="detail-label">Category</span>
+                            <span class="detail-value" id="detailCategory"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <span class="detail-label">Phone</span>
+                            <span class="detail-value" id="detailPhone"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-star"></i>
+                        <div>
+                            <span class="detail-label">Rating</span>
+                            <span class="detail-value" id="detailRating"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-clipboard-list"></i>
+                        <div>
+                            <span class="detail-label">Active Work Orders</span>
+                            <span class="detail-value" id="detailWorkOrders"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value" id="detailStatus"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-item" style="margin-top: 20px;">
+                    <i class="fas fa-sticky-note"></i>
+                    <div>
+                        <span class="detail-label">Notes</span>
+                        <span class="detail-value" id="detailNotes" style="white-space: pre-wrap;"></span>
+                    </div>
+                </div>
+                
+                <div class="detail-actions">
+                    <button class="btn-primary" id="closeViewModalBtn" style="margin-left: auto;">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Contractor Modal -->
+    <div class="modal" id="editContractorModal">
+        <div class="modal-overlay" id="editModalOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Edit Contractor</h2>
+                <button class="modal-close" id="closeEditModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" id="editContractorForm" class="modal-form">
+                {% csrf_token %}
+                <input type="hidden" id="edit_contractor_id" name="contractor_id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_name">Contractor Name *</label>
+                        <input type="text" id="edit_name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_company_name">Company Name *</label>
+                        <input type="text" id="edit_company_name" name="company_name" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_category">Category *</label>
+                        <select id="edit_category" name="category" required>
+                            <option value="plumber">Plumber</option>
+                            <option value="electrician">Electrician</option>
+                            <option value="hvac">HVAC Technician</option>
+                            <option value="cleaner">Cleaning Services</option>
+                            <option value="security">Security</option>
+                            <option value="landscaper">Landscaping</option>
+                            <option value="painter">Painter</option>
+                            <option value="carpenter">Carpenter</option>
+                            <option value="pest_control">Pest Control</option>
+                            <option value="general">General Maintenance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_phone">Phone *</label>
+                        <input type="tel" id="edit_phone" name="phone" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_email">Email *</label>
+                        <input type="email" id="edit_email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_status">Status *</label>
+                        <select id="edit_status" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_notes">Notes (Optional)</label>
+                    <textarea id="edit_notes" name="notes" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelEditBtn">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteConfirmModal">
+        <div class="modal-overlay" id="deleteModalOverlay"></div>
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header" style="background: #fee2e2; border-bottom-color: #fecaca;">
+                <h2 style="color: #991b1b; display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirm Delete
+                </h2>
+                <button class="modal-close" id="closeDeleteModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div style="padding: 32px 24px;">
+                <p style="font-size: 16px; color: #1f2937; margin-bottom: 8px; font-weight: 500;">
+                    Are you sure you want to delete <strong id="deleteContractorName"></strong>?
+                </p>
+                <p style="font-size: 14px; color: #6b7280;">
+                    This action cannot be undone.
+                </p>
+            </div>
+            
+            <div class="form-actions" style="padding: 0 24px 24px;">
+                <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete Contractor
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load main.js first, then subcontractors.js -->
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/subcontractors.js' %}"></script>
+</body>
+</html>

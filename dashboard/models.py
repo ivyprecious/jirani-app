@@ -1,15 +1,35 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import date
 
 class Resident(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('pending', 'Pending'),
+        ('moved_out', 'Moved Out'),
+    ]
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     unit_number = models.CharField(max_length=10)
     phone = models.CharField(max_length=15)
     move_in_date = models.DateField()
+    monthly_rent = models.DecimalField(max_digits=10, decimal_places=2, default=10000.00)
     is_active = models.BooleanField(default=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     
     def __str__(self):
         return f"{self.user.get_full_name()} - Unit {self.unit_number}"
+    
+    def get_payment_status(self):
+        """Check if tenant has paid current month"""
+        from datetime import date
+        current_month = date.today().month
+        payment = Payment.objects.filter(
+            resident=self,
+            due_date__month=current_month,
+            paid=True
+        ).first()
+        return 'paid' if payment else 'pending'
 
 class Payment(models.Model):
     PAYMENT_TYPES = [
@@ -93,3 +113,70 @@ class Announcement(models.Model):
     
     def __str__(self):
         return self.title
+
+class ParkingSlot(models.Model):
+    STATUS_CHOICES = [
+        ('assigned', 'Assigned'),
+        ('available', 'Available'),
+    ]
+    
+    slot_number = models.CharField(max_length=10, unique=True)  # e.g., P-101A
+    resident = models.ForeignKey(Resident, on_delete=models.SET_NULL, null=True, blank=True, related_name='parking_slots')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
+    assigned_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['slot_number']
+    
+    def __str__(self):
+        return f"{self.slot_number} - {self.status}"
+    
+    @property
+    def unit_number(self):
+        """Get unit number from resident"""
+        return self.resident.unit_number if self.resident else ''
+    
+    @property
+    def tenant_name(self):
+        """Get tenant name from resident"""
+        return self.resident.user.get_full_name() if self.resident else ''
+    
+class Subcontractor(models.Model):
+    CATEGORY_CHOICES = [
+        ('plumber', 'Plumber'),
+        ('electrician', 'Electrician'),
+        ('hvac', 'HVAC Technician'),
+        ('cleaner', 'Cleaning Services'),
+        ('security', 'Security'),
+        ('landscaper', 'Landscaping'),
+        ('painter', 'Painter'),
+        ('carpenter', 'Carpenter'),
+        ('pest_control', 'Pest Control'),
+        ('general', 'General Maintenance'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+    ]
+    
+    name = models.CharField(max_length=100)
+    company_name = models.CharField(max_length=100, blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    phone = models.CharField(max_length=15)
+    email = models.EmailField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)  # 0.00 to 5.00
+    joined_date = models.DateField(default=date.today)
+    notes = models.TextField(blank=True)
+    
+    def __str__(self):
+        return f"{self.name} - {self.get_category_display()}"
+    
+    def active_work_orders_count(self):
+        """Count active work orders assigned to this contractor"""
+        return WorkOrder.objects.filter(
+            assigned_to=self.name,
+            status__in=['new', 'open', 'in_progress']
+        ).count()

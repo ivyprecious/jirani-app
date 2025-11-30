@@ -1,0 +1,551 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenants - Jirani App</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="{% static 'images/Jirani App Logo 1.png' %}" alt="Jirani Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                </div>
+                <h1>JIRANI</h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'dashboard' %}" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-building"></i>
+                    <span>Building</span>
+                </a>
+                <a href="{% url 'tenants' %}" class="nav-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Tenants</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="{% url 'parking' %}" class="nav-item">
+                    <i class="fas fa-parking"></i>
+                    <span>Parking</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Services</span>
+                </a>
+                <a href="{% url 'subcontractors' %}" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Subcontractors</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <h2 style="font-size: 24px; font-weight: 700; color: #1f2937;">Tenants Management</h2>
+                
+                <div class="user-section">
+                    <i class="fas fa-bell"></i>
+                    <div class="user-profile" id="userProfileBtn">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user.get_full_name }}</div>
+                            <div class="user-role">Manager</div>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">{{ user.get_full_name }}</div>
+                                <div class="user-email">{{ user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                            <span class="badge-count">3</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>Messages</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Help & Support</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'logout' %}" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Tenants Content -->
+            <div class="tenants-page">
+                
+                <!-- Success/Error Messages -->
+                {% if messages %}
+                    <div class="messages-container">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ message }}</span>
+                                <button class="alert-close" onclick="this.parentElement.remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.total }}</div>
+                            <div class="stat-label">Total Tenants</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #10b981;">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.active }}</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f59e0b;">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.pending }}</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #ef4444;">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ overdue }}</div>
+                            <div class="stat-label">Overdue Payments</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filters and Search -->
+                <div class="tenants-toolbar">
+                    <div class="filter-buttons">
+                        <a href="?status=all" class="filter-btn {% if filter_status == 'all' %}active{% endif %}">
+                            <i class="fas fa-list"></i> All
+                        </a>
+                        <a href="?status=active" class="filter-btn {% if filter_status == 'active' %}active{% endif %}">
+                            <i class="fas fa-check-circle"></i> Active
+                        </a>
+                        <a href="?status=pending" class="filter-btn {% if filter_status == 'pending' %}active{% endif %}">
+                            <i class="fas fa-clock"></i> Pending
+                        </a>
+                        <a href="?status=moved_out" class="filter-btn {% if filter_status == 'moved_out' %}active{% endif %}">
+                            <i class="fas fa-sign-out-alt"></i> Moved Out
+                        </a>
+                    </div>
+                    
+                    <div class="search-actions">
+                        <form method="GET" class="search-form">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="search" placeholder="Search tenants, units..." value="{{ search_query }}">
+                        </form>
+                        <button class="btn-primary" id="addTenantBtn">
+                            <i class="fas fa-plus"></i> Add Tenant
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tenants Table -->
+                <div class="tenants-table-container">
+                    <table class="tenants-table">
+                        <thead>
+                            <tr>
+                                <th>Tenant</th>
+                                <th>Unit</th>
+                                <th>Phone</th>
+                                <th>Move-in Date</th>
+                                <th>Monthly Rent</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resident in residents %}
+                            <tr data-resident-id="{{ resident.id }}">
+                                <td>
+                                    <div class="tenant-info">
+                                        <div class="tenant-avatar">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="tenant-details">
+                                            <div class="tenant-name">{{ resident.user.get_full_name }}</div>
+                                            <div class="tenant-email">{{ resident.user.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="unit-badge">{{ resident.unit_number }}</span></td>
+                                <td>{{ resident.phone }}</td>
+                                <td>{{ resident.move_in_date|date:"M d, Y" }}</td>
+                                <td><strong>Ksh.{{ resident.monthly_rent|floatformat:2 }}</strong></td>
+                                <td>
+                                    {% if resident.status == 'active' %}
+                                        <span class="status-badge active">
+                                            <i class="fas fa-check-circle"></i> Active
+                                        </span>
+                                    {% elif resident.status == 'pending' %}
+                                        <span class="status-badge pending">
+                                            <i class="fas fa-clock"></i> Pending
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge moved-out">
+                                            <i class="fas fa-times-circle"></i> Moved Out
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon" title="Message">
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                        <button class="btn-icon btn-delete" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">
+                                    <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                                    <div>No tenants found</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+
+    <!-- Add Tenant Modal -->
+    <div class="modal" id="addTenantModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Add New Tenant</h2>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" action="{% url 'add_tenant' %}" class="modal-form">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first_name">First Name *</label>
+                        <input type="text" id="first_name" name="first_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="last_name">Last Name *</label>
+                        <input type="text" id="last_name" name="last_name" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone *</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+254712345678" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="unit_number">Unit Number *</label>
+                        <input type="text" id="unit_number" name="unit_number" placeholder="e.g. 101" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="monthly_rent">Monthly Rent (Ksh) *</label>
+                        <input type="number" id="monthly_rent" name="monthly_rent" placeholder="15000" step="0.01" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="move_in_date">Move-in Date *</label>
+                        <input type="date" id="move_in_date" name="move_in_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status">Status *</label>
+                        <select id="status" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="pending">Pending</option>
+                            <option value="moved_out">Moved Out</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Add Tenant
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/tenants.js' %}"></script>
+
+    <!-- View Tenant Details Modal -->
+    <div class="modal" id="viewTenantModal">
+        <div class="modal-overlay" id="viewModalOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Tenant Details</h2>
+                <button class="modal-close" id="closeViewModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="tenant-details-content">
+                <div class="detail-section">
+                    <div class="detail-avatar-large">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="detail-name" id="detailName"></h3>
+                    <p class="detail-email" id="detailEmail"></p>
+                </div>
+                
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <i class="fas fa-home"></i>
+                        <div>
+                            <span class="detail-label">Unit Number</span>
+                            <span class="detail-value" id="detailUnit"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <span class="detail-label">Phone</span>
+                            <span class="detail-value" id="detailPhone"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-calendar"></i>
+                        <div>
+                            <span class="detail-label">Move-in Date</span>
+                            <span class="detail-value" id="detailMoveIn"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-money-bill"></i>
+                        <div>
+                            <span class="detail-label">Monthly Rent</span>
+                            <span class="detail-value" id="detailRent"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value" id="detailStatus"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-actions">
+    <button class="btn-primary" id="closeViewModalBtn" style="margin-left: auto;">
+        Close
+    </button>
+</div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/tenants.js' %}"></script>
+    <!-- Edit Tenant Modal -->
+    <div class="modal" id="editTenantModal">
+        <div class="modal-overlay" id="editModalOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Edit Tenant</h2>
+                <button class="modal-close" id="closeEditModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" id="editTenantForm" class="modal-form">
+                {% csrf_token %}
+                <input type="hidden" id="edit_resident_id" name="resident_id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_first_name">First Name *</label>
+                        <input type="text" id="edit_first_name" name="first_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_last_name">Last Name *</label>
+                        <input type="text" id="edit_last_name" name="last_name" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_email">Email *</label>
+                        <input type="email" id="edit_email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_phone">Phone *</label>
+                        <input type="tel" id="edit_phone" name="phone" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_unit_number">Unit Number *</label>
+                        <input type="text" id="edit_unit_number" name="unit_number" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_monthly_rent">Monthly Rent (Ksh) *</label>
+                        <input type="number" id="edit_monthly_rent" name="monthly_rent" step="0.01" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_move_in_date">Move-in Date *</label>
+                        <input type="date" id="edit_move_in_date" name="move_in_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_status">Status *</label>
+                        <select id="edit_status" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="pending">Pending</option>
+                            <option value="moved_out">Moved Out</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelEditBtn">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/tenants.js' %}"></script>
+<!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteConfirmModal">
+        <div class="modal-overlay" id="deleteModalOverlay"></div>
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header" style="background: #fee2e2; border-bottom-color: #fecaca;">
+                <h2 style="color: #991b1b; display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirm Delete
+                </h2>
+                <button class="modal-close" id="closeDeleteModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div style="padding: 32px 24px;">
+                <p style="font-size: 16px; color: #1f2937; margin-bottom: 8px; font-weight: 500;">
+                    Are you sure you want to delete <strong id="deleteTenantName"></strong>?
+                </p>
+                <p style="font-size: 14px; color: #6b7280;">
+                    This action cannot be undone.
+                </p>
+            </div>
+            
+            <div class="form-actions" style="padding: 0 24px 24px;">
+                <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete Tenant
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/tenants.js' %}"></script>
+</body>
+</html>
