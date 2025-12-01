@@ -17,35 +17,29 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = `?status=${currentStatus}&category=${category}`;
     };
 
-    // ========================================
-    // SEARCH FUNCTIONALITY
-    // ========================================
-    const searchInput = document.getElementById('searchInput');
-    const searchForm = document.getElementById('searchForm');
+    // Real-time search
+const searchInput = document.getElementById('searchInput');
+const tableRows = document.querySelectorAll('.tenants-table tbody tr[data-contractor-id]');
 
-    if (searchInput && searchForm) {
-        console.log('Search elements found');
+if (searchInput) {
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
         
-        // Submit search on Enter key
-        searchInput.addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                searchForm.submit();
-            }
+        tableRows.forEach(row => {
+            const name = (row.dataset.name || '').toLowerCase();
+            const company = (row.dataset.company || '').toLowerCase();
+            const phone = (row.dataset.phone || '').toLowerCase();
+            const email = (row.dataset.email || '').toLowerCase();
+            
+            const matches = name.includes(searchTerm) || 
+                           company.includes(searchTerm) || 
+                           phone.includes(searchTerm) ||
+                           email.includes(searchTerm);
+            
+            row.style.display = matches ? '' : 'none';
         });
-
-        // Also allow clicking search icon
-        const searchIcon = searchForm.querySelector('.fa-search');
-        if (searchIcon) {
-            searchIcon.style.cursor = 'pointer';
-            searchIcon.addEventListener('click', function() {
-                searchForm.submit();
-            });
-        }
-    } else {
-        console.log('Search elements not found');
-    }
-
+    });
+}
     // ========================================
     // ADD SUBCONTRACTOR MODAL
     // ========================================

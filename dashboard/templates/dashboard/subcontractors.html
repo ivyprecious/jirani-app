@@ -205,11 +205,10 @@
                     </div>
                     
                     <div class="search-actions">
-                        <form method="GET" class="search-form" id="searchForm">
-                            <i class="fas fa-search"></i>
-                            <input type="hidden" name="status" value="{{ filter_status }}">
-                            <input type="hidden" name="category" value="{{ filter_category }}">
-                            <input type="text" name="search" placeholder="Search contractors..." value="{{ search_query }}" id="searchInput">
+    <div class="search-form">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search contractors..." id="searchInput" autocomplete="off">
+    </div>
                             <button type="submit" style="display: none;"></button>
                         </form>
                         <button class="btn-primary" id="addSubcontractorBtn">
