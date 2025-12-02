@@ -74,13 +74,12 @@
         <main class="main-content">
             <!-- Top Navigation -->
             <header class="top-nav">
-                <nav class="nav-links">
-                    <a href="#" class="nav-link active">Overview</a>
-                    <a href="#" class="nav-link">Work Orders</a>
-                    <a href="#" class="nav-link">Rent</a>
-                    <a href="#" class="nav-link">Collection</a>
-                    <a href="#" class="nav-link">Access</a>
-                </nav>
+               <div class="nav-links">
+    <a href="{% url 'dashboard' %}" class="nav-link active">Overview</a>
+    <a href="#" class="nav-link">Work Orders</a>
+    <a href="{% url 'rent_collection' %}" class="nav-link">Rent Collection</a>
+    <a href="#" class="nav-link">Access</a>
+</div>
                 
                 <div class="user-section">
     <i class="fas fa-bell"></i>

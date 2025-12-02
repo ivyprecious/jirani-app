@@ -1730,3 +1730,41 @@ body {
         padding: 4px 8px;
     }
 }
+
+/* Rent Collection Styles */
+
+.payment-summary {
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border-left: 4px solid #667eea;
+}
+
+.payment-summary h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.payment-summary p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 0;
+}
+
+.modal-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.modal-form textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}

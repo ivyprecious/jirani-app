@@ -39,15 +39,56 @@ class Payment(models.Model):
         ('debt', 'Debt'),
     ]
     
-    resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
+    PAYMENT_METHODS = [
+        ('mpesa', 'M-Pesa'),
+        ('bank', 'Bank Transfer'),
+        ('cash', 'Cash'),
+        ('cheque', 'Cheque'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('paid', 'Paid'),
+        ('partial', 'Partial'),
+        ('pending', 'Pending'),
+        ('overdue', 'Overdue'),
+    ]
+    
+    resident = models.ForeignKey(Resident, on_delete=models.CASCADE, related_name='payments')
+    month = models.CharField(max_length=20, default='')  # e.g., "December 2025"
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPES)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPES, default='rent')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, blank=True)
+    transaction_code = models.CharField(max_length=100, blank=True)
     due_date = models.DateField()
     paid = models.BooleanField(default=False)
     paid_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    
+    class Meta:
+        ordering = ['-due_date']
     
     def __str__(self):
         return f"{self.resident.unit_number} - {self.payment_type} - Ksh.{self.amount}"
+    
+    @property
+    def balance(self):
+        return self.amount - self.amount_paid
+    
+    def save(self, *args, **kwargs):
+        # Auto-update status
+        if self.amount_paid >= self.amount:
+            self.status = 'paid'
+            self.paid = True
+        elif self.amount_paid > 0:
+            self.status = 'partial'
+        elif date.today() > self.due_date:
+            self.status = 'overdue'
+        else:
+            self.status = 'pending'
+        super().save(*args, **kwargs)
 
 class Request(models.Model):
     STATUS_CHOICES = [

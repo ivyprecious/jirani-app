@@ -17,4 +17,7 @@ urlpatterns = [
     path('subcontractors/add/', views.add_subcontractor_view, name='add_subcontractor'),
     path('subcontractors/edit/<int:subcontractor_id>/', views.edit_subcontractor_view, name='edit_subcontractor'),
     path('subcontractors/delete/<int:subcontractor_id>/', views.delete_subcontractor_view, name='delete_subcontractor'),
+    path('rent/', views.rent_collection_view, name='rent_collection'),
+    path('rent/record/<int:payment_id>/', views.record_payment_view, name='record_payment'),
+    path('rent/generate/', views.generate_invoices_view, name='generate_invoices'),
 ]

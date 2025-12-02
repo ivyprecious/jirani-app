@@ -4,9 +4,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import Resident, Payment, Request, WorkOrder, Unit, ParkingSlot, Subcontractor
 from django.db.models import Count, Q
-from datetime import date
+from datetime import date, datetime
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from django.db.models import Q, Sum
+from dateutil.relativedelta import relativedelta
+from decimal import Decimal
 
 @login_required
 def dashboard_view(request):
@@ -383,7 +386,7 @@ def unassign_parking_view(request, slot_id):
 @login_required
 def subcontractors_view(request):
     # Get all subcontractors
-    all_subcontractors = Subcontractor.objects.all()
+    all_subcontractors = Subcontractor.objects.order_by('-id')
     
     # Get filter and search
     filter_category = request.GET.get('category', 'all')
@@ -511,3 +514,135 @@ def delete_subcontractor_view(request, subcontractor_id):
     except Exception as e:
         messages.error(request, f'Error deleting subcontractor: {str(e)}')
         return redirect('subcontractors')
+    
+@login_required
+def rent_collection_view(request):
+    # Get all rent payments
+    all_payments = Payment.objects.filter(payment_type='rent').select_related('resident__user')
+    
+    # Get current month for stats
+    current_month = date.today().strftime('%B %Y')
+    current_month_payments = all_payments.filter(month=current_month)
+    
+    # Get filter parameters
+    filter_status = request.GET.get('status', 'all')
+    search_query = request.GET.get('search', '')
+    
+    # Apply filters
+    payments = all_payments
+    
+    if filter_status != 'all':
+        payments = payments.filter(status=filter_status)
+    
+    if search_query:
+        payments = payments.filter(
+            Q(resident__user__first_name__icontains=search_query) |
+            Q(resident__user__last_name__icontains=search_query) |
+            Q(resident__unit_number__icontains=search_query) |
+            Q(transaction_code__icontains=search_query)
+        )
+    
+    # Calculate statistics
+    total_expected = current_month_payments.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_collected = current_month_payments.aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0
+    
+    stats = {
+        'total_expected': total_expected,
+        'total_collected': total_collected,
+        'total_balance': total_expected - total_collected,
+        'paid_count': current_month_payments.filter(status='paid').count(),
+        'pending_count': current_month_payments.filter(status='pending').count(),
+        'overdue_count': current_month_payments.filter(status='overdue').count(),
+        'partial_count': current_month_payments.filter(status='partial').count(),
+    }
+    
+    # Calculate collection rate
+    if stats['total_expected'] > 0:
+        stats['collection_rate'] = round((stats['total_collected'] / stats['total_expected']) * 100, 1)
+    else:
+        stats['collection_rate'] = 0
+    
+    context = {
+        'payments': payments.order_by('-due_date', 'resident__unit_number'),
+        'stats': stats,
+        'filter_status': filter_status,
+        'search_query': search_query,
+        'current_month': current_month,
+    }
+    
+    return render(request, 'dashboard/rent_collection.html', context)
+
+
+@login_required
+def record_payment_view(request, payment_id):
+    if request.method == 'POST':
+        try:
+            payment = Payment.objects.get(id=payment_id)
+            
+            amount_paid = Decimal(request.POST.get('amount_paid'))
+            payment_method = request.POST.get('payment_method')
+            transaction_code = request.POST.get('transaction_code', '')
+            payment_date = request.POST.get('payment_date')
+            notes = request.POST.get('notes', '')
+            
+            # Update payment
+            payment.amount_paid += amount_paid
+            payment.payment_method = payment_method
+            payment.transaction_code = transaction_code
+            payment.paid_date = payment_date
+            payment.notes = notes
+            payment.save()  # This will auto-update status
+            
+            messages.success(request, f'Payment of Ksh.{amount_paid} recorded successfully!')
+            return redirect('rent_collection')
+            
+        except Payment.DoesNotExist:
+            messages.error(request, 'Payment record not found')
+        except Exception as e:
+            messages.error(request, f'Error recording payment: {str(e)}')
+    
+    return redirect('rent_collection')
+
+
+@login_required
+def generate_invoices_view(request):
+    """Generate payment records for all active tenants"""
+    if request.method == 'POST':
+        try:
+            # Get next month
+            from datetime import datetime
+            from dateutil.relativedelta import relativedelta
+            
+            next_month_date = date.today() + relativedelta(months=1)
+            month_str = next_month_date.strftime('%B %Y')
+            due_date = next_month_date.replace(day=5)
+            
+            # Get all active residents
+            active_residents = Resident.objects.filter(status='active')
+            
+            created_count = 0
+            for resident in active_residents:
+                # Check if payment already exists for this month
+                if not Payment.objects.filter(
+                    resident=resident, 
+                    month=month_str,
+                    payment_type='rent'
+                ).exists():
+                    Payment.objects.create(
+                        resident=resident,
+                        month=month_str,
+                        amount=resident.monthly_rent,
+                        amount_paid=0,
+                        payment_type='rent',
+                        due_date=due_date,
+                        status='pending'
+                    )
+                    created_count += 1
+            
+            messages.success(request, f'Successfully generated {created_count} invoices for {month_str}')
+            return redirect('rent_collection')
+            
+        except Exception as e:
+            messages.error(request, f'Error generating invoices: {str(e)}')
+    
+    return redirect('rent_collection')
