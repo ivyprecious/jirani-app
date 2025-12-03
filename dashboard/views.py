@@ -646,3 +646,170 @@ def generate_invoices_view(request):
             messages.error(request, f'Error generating invoices: {str(e)}')
     
     return redirect('rent_collection')
+
+@login_required
+def services_view(request):
+    # Get all work orders
+    all_work_orders = WorkOrder.objects.select_related('assigned_to', 'resident').all()
+    
+    # Get filter parameters
+    filter_status = request.GET.get('status', 'all')
+    filter_priority = request.GET.get('priority', 'all')
+    filter_category = request.GET.get('category', 'all')
+    search_query = request.GET.get('search', '')
+    
+    # Apply filters
+    work_orders = all_work_orders
+    
+    if filter_status != 'all':
+        work_orders = work_orders.filter(status=filter_status)
+    
+    if filter_priority != 'all':
+        work_orders = work_orders.filter(priority=filter_priority)
+    
+    if filter_category != 'all':
+        work_orders = work_orders.filter(category=filter_category)
+    
+    if search_query:
+        work_orders = work_orders.filter(
+            Q(order_id__icontains=search_query) |
+            Q(title__icontains=search_query) |
+            Q(unit_number__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Calculate statistics
+    stats = {
+        'total': all_work_orders.count(),
+        'new': all_work_orders.filter(status='new').count(),
+        'open': all_work_orders.filter(status='open').count(),
+        'in_progress': all_work_orders.filter(status='in_progress').count(),
+        'completed': all_work_orders.filter(status='completed').count(),
+        'delayed': all_work_orders.filter(status='delayed').count(),
+        'urgent': all_work_orders.filter(priority='urgent').count(),
+    }
+    
+    # Get available contractors
+    contractors = Subcontractor.objects.filter(status='active')
+    
+    # Get available units
+    residents = Resident.objects.filter(status='active')
+    
+    context = {
+        'work_orders': work_orders.order_by('-created_at'),
+        'stats': stats,
+        'filter_status': filter_status,
+        'filter_priority': filter_priority,
+        'filter_category': filter_category,
+        'search_query': search_query,
+        'contractors': contractors,
+        'residents': residents,
+    }
+    
+    return render(request, 'dashboard/services.html', context)
+
+
+@login_required
+def create_work_order_view(request):
+    if request.method == 'POST':
+        try:
+            # Generate unique order ID
+            import random
+            order_id = f"WO-{random.randint(1000, 9999)}"
+            while WorkOrder.objects.filter(order_id=order_id).exists():
+                order_id = f"WO-{random.randint(1000, 9999)}"
+            
+            title = request.POST.get('title')
+            description = request.POST.get('description')
+            unit_number = request.POST.get('unit_number')
+            category = request.POST.get('category')
+            priority = request.POST.get('priority')
+            contractor_id = request.POST.get('contractor_id')
+            due_date = request.POST.get('due_date')
+            
+            # Get contractor and resident
+            contractor = None
+            if contractor_id:
+                contractor = Subcontractor.objects.get(id=contractor_id)
+            
+            resident = Resident.objects.filter(unit_number=unit_number).first()
+            
+            # Create work order
+            work_order = WorkOrder.objects.create(
+                order_id=order_id,
+                title=title,
+                description=description,
+                unit_number=unit_number,
+                category=category,
+                priority=priority,
+                assigned_to=contractor,
+                resident=resident,
+                due_date=due_date if due_date else None,
+                status='new'
+            )
+            
+            messages.success(request, f'Work order {order_id} created successfully!')
+            return redirect('services')
+            
+        except Exception as e:
+            messages.error(request, f'Error creating work order: {str(e)}')
+    
+    return redirect('services')
+
+
+@login_required
+def update_work_order_view(request, order_id):
+    if request.method == 'POST':
+        try:
+            work_order = WorkOrder.objects.get(id=order_id)
+            
+            work_order.title = request.POST.get('title')
+            work_order.description = request.POST.get('description')
+            work_order.category = request.POST.get('category')
+            work_order.priority = request.POST.get('priority')
+            work_order.status = request.POST.get('status')
+            
+            contractor_id = request.POST.get('contractor_id')
+            if contractor_id:
+                work_order.assigned_to = Subcontractor.objects.get(id=contractor_id)
+            
+            due_date = request.POST.get('due_date')
+            work_order.due_date = due_date if due_date else None
+            
+            cost = request.POST.get('cost')
+            if cost:
+                work_order.cost = cost
+            
+            # If status is completed, set completed_date
+            if work_order.status == 'completed' and not work_order.completed_date:
+                work_order.completed_date = date.today()
+            
+            work_order.save()
+            
+            messages.success(request, f'Work order {work_order.order_id} updated successfully!')
+            return redirect('services')
+            
+        except WorkOrder.DoesNotExist:
+            messages.error(request, 'Work order not found')
+        except Exception as e:
+            messages.error(request, f'Error updating work order: {str(e)}')
+    
+    return redirect('services')
+
+
+@login_required
+def delete_work_order_view(request, order_id):
+    try:
+        work_order = WorkOrder.objects.get(id=order_id)
+        order_number = work_order.order_id
+        work_order.delete()
+        
+        messages.success(request, f'Work order {order_number} deleted successfully')
+        return redirect('services')
+        
+    except WorkOrder.DoesNotExist:
+        messages.error(request, 'Work order not found')
+    except Exception as e:
+        messages.error(request, f'Error deleting work order: {str(e)}')
+    
+    return redirect('services')

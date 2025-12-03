@@ -1,0 +1,635 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - Jirani App</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="{% static 'images/Jirani App Logo 1.png' %}" alt="Jirani Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                </div>
+                <h1>JIRANI</h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'dashboard' %}" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-building"></i>
+                    <span>Building</span>
+                </a>
+                <a href="{% url 'tenants' %}" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Tenants</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="{% url 'parking' %}" class="nav-item">
+                    <i class="fas fa-parking"></i>
+                    <span>Parking</span>
+                </a>
+                <a href="{% url 'services' %}" class="nav-item active">
+                    <i class="fas fa-tools"></i>
+                    <span>Services</span>
+                </a>
+                <a href="{% url 'subcontractors' %}" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Subcontractors</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <h2 style="font-size: 24px; font-weight: 700; color: #1f2937;">Services Management</h2>
+                <div class="nav-links" style="display: none;">
+                    <a href="{% url 'dashboard' %}" class="nav-link">Overview</a>
+                    <a href="{% url 'services' %}" class="nav-link active">Work Orders</a>
+                    <a href="{% url 'rent_collection' %}" class="nav-link">Rent Collection</a>
+                    <a href="#" class="nav-link">Collection</a>
+                    <a href="#" class="nav-link">Access</a>
+                </div>
+                
+                <div class="user-section">
+                    <i class="fas fa-bell"></i>
+                    <div class="user-profile" id="userProfileBtn">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user.get_full_name }}</div>
+                            <div class="user-role">Manager</div>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">{{ user.get_full_name }}</div>
+                                <div class="user-email">{{ user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="{% url 'logout' %}" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Services Content -->
+            <div class="tenants-page">
+                
+                <!-- Messages -->
+                {% if messages %}
+                    <div class="messages-container">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ message }}</span>
+                                <button class="alert-close" onclick="this.parentElement.remove()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid" style="grid-template-columns: repeat(6, 1fr);">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.total }}</div>
+                            <div class="stat-label">Total Orders</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #3b82f6;">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.new }}</div>
+                            <div class="stat-label">New</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #8b5cf6;">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.open }}</div>
+                            <div class="stat-label">Open</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f59e0b;">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.in_progress }}</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #10b981;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.completed }}</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #ef4444;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ stats.urgent }}</div>
+                            <div class="stat-label">Urgent</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filters and Actions -->
+                <div class="tenants-toolbar">
+                    <div class="filter-buttons" style="gap: 8px;">
+                        <a href="?status=all" class="filter-btn {% if filter_status == 'all' %}active{% endif %}">
+                            <i class="fas fa-list"></i> All
+                        </a>
+                        <a href="?status=new" class="filter-btn {% if filter_status == 'new' %}active{% endif %}">
+                            <i class="fas fa-plus-circle"></i> New
+                        </a>
+                        <a href="?status=in_progress" class="filter-btn {% if filter_status == 'in_progress' %}active{% endif %}">
+                            <i class="fas fa-spinner"></i> In Progress
+                        </a>
+                        <a href="?status=completed" class="filter-btn {% if filter_status == 'completed' %}active{% endif %}">
+                            <i class="fas fa-check"></i> Completed
+                        </a>
+                        <a href="?status=delayed" class="filter-btn {% if filter_status == 'delayed' %}active{% endif %}">
+                            <i class="fas fa-exclamation-circle"></i> Delayed
+                        </a>
+                    </div>
+                    
+                    <div class="search-actions">
+                        <div class="search-form">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search work orders..." id="searchInput" autocomplete="off">
+                        </div>
+                        <button class="btn-primary" id="createWorkOrderBtn">
+                            <i class="fas fa-plus"></i> Create Work Order
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Work Orders Table -->
+                <div class="tenants-table-container">
+                    <table class="tenants-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Title</th>
+                                <th>Unit</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Assigned To</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in work_orders %}
+                            <tr data-order-id="{{ order.id }}"
+                                data-title="{{ order.title }}"
+                                data-unit="{{ order.unit_number }}"
+                                data-ordernum="{{ order.order_id }}">
+                                <td><strong>{{ order.order_id }}</strong></td>
+                                <td>{{ order.title|truncatewords:5 }}</td>
+                                <td><span class="unit-badge">{{ order.unit_number }}</span></td>
+                                <td>
+                                    <span class="category-badge category-{{ order.category }}">
+                                        <i class="fas fa-wrench"></i> {{ order.get_category_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if order.priority == 'urgent' %}
+                                        <span class="priority-badge urgent">
+                                            <i class="fas fa-exclamation-circle"></i> Urgent
+                                        </span>
+                                    {% elif order.priority == 'high' %}
+                                        <span class="priority-badge high">
+                                            <i class="fas fa-arrow-up"></i> High
+                                        </span>
+                                    {% elif order.priority == 'normal' %}
+                                        <span class="priority-badge normal">
+                                            <i class="fas fa-minus"></i> Normal
+                                        </span>
+                                    {% else %}
+                                        <span class="priority-badge low">
+                                            <i class="fas fa-arrow-down"></i> Low
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ order.contractor_name }}</td>
+                                <td>
+                                    {% if order.status == 'completed' %}
+                                        <span class="status-badge active">
+                                            <i class="fas fa-check-circle"></i> Completed
+                                        </span>
+                                    {% elif order.status == 'in_progress' %}
+                                        <span class="status-badge" style="background: #fef3c7; color: #92400e;">
+                                            <i class="fas fa-spinner"></i> In Progress
+                                        </span>
+                                    {% elif order.status == 'delayed' %}
+                                        <span class="status-badge moved-out">
+                                            <i class="fas fa-exclamation-circle"></i> Delayed
+                                        </span>
+                                    {% elif order.status == 'open' %}
+                                        <span class="status-badge" style="background: #dbeafe; color: #1e40af;">
+                                            <i class="fas fa-folder-open"></i> Open
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge pending">
+                                            <i class="fas fa-plus-circle"></i> New
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-icon view-order-btn" title="View Details"
+                                                data-id="{{ order.id }}"
+                                                data-orderid="{{ order.order_id }}"
+                                                data-title="{{ order.title }}"
+                                                data-description="{{ order.description }}"
+                                                data-unit="{{ order.unit_number }}"
+                                                data-category="{{ order.category }}"
+                                                data-priority="{{ order.priority }}"
+                                                data-status="{{ order.status }}"
+                                                data-contractor="{{ order.contractor_name }}"
+                                                data-cost="{{ order.cost }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon edit-order-btn" title="Edit"
+                                                data-id="{{ order.id }}"
+                                                data-title="{{ order.title }}"
+                                                data-description="{{ order.description }}"
+                                                data-unit="{{ order.unit_number }}"
+                                                data-category="{{ order.category }}"
+                                                data-priority="{{ order.priority }}"
+                                                data-status="{{ order.status }}"
+                                                data-contractor-id="{{ order.assigned_to.id|default:'' }}"
+                                                data-due="{{ order.due_date|default:'' }}"
+                                                data-cost="{{ order.cost }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-icon btn-delete delete-order-btn" title="Delete"
+                                                data-id="{{ order.id }}"
+                                                data-orderid="{{ order.order_id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
+                                    <i class="fas fa-tools" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                                    <div>No work orders found</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Work Order Modal -->
+    <div class="modal" id="createWorkOrderModal">
+        <div class="modal-overlay" id="createModalOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Create Work Order</h2>
+                <button class="modal-close" id="closeCreateModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" action="{% url 'create_work_order' %}" class="modal-form">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title">Title *</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="unit_number">Unit Number *</label>
+                        <select id="unit_number" name="unit_number" required>
+                            <option value="">Select Unit</option>
+                            {% for resident in residents %}
+                                <option value="{{ resident.unit_number }}">Unit {{ resident.unit_number }} - {{ resident.user.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="hvac">HVAC</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="security">Security</option>
+                            <option value="landscaping">Landscaping</option>
+                            <option value="painting">Painting</option>
+                            <option value="carpentry">Carpentry</option>
+                            <option value="pest_control">Pest Control</option>
+                            <option value="general">General Maintenance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priority">Priority *</label>
+                        <select id="priority" name="priority" required>
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contractor_id">Assign to Contractor</label>
+                        <select id="contractor_id" name="contractor_id">
+                            <option value="">Unassigned</option>
+                            {% for contractor in contractors %}
+                                <option value="{{ contractor.id }}">{{ contractor.name }} - {{ contractor.get_category_display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="due_date">Due Date</label>
+                        <input type="date" id="due_date" name="due_date">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelCreateBtn">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-plus"></i> Create Work Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Work Order Modal -->
+    <div class="modal" id="viewOrderModal">
+        <div class="modal-overlay" id="viewOrderOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="viewOrderTitle">Work Order Details</h2>
+                <button class="modal-close" id="closeViewOrder">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="tenant-details-content">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <i class="fas fa-hashtag"></i>
+                        <div>
+                            <span class="detail-label">Order ID</span>
+                            <span class="detail-value" id="viewOrderId"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-home"></i>
+                        <div>
+                            <span class="detail-label">Unit</span>
+                            <span class="detail-value" id="viewOrderUnit"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-tools"></i>
+                        <div>
+                            <span class="detail-label">Category</span>
+                            <span class="detail-value" id="viewOrderCategory"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-flag"></i>
+                        <div>
+                            <span class="detail-label">Priority</span>
+                            <span class="detail-value" id="viewOrderPriority"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-user-tie"></i>
+                        <div>
+                            <span class="detail-label">Assigned To</span>
+                            <span class="detail-value" id="viewOrderContractor"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <i class="fas fa-money-bill"></i>
+                        <div>
+                            <span class="detail-label">Cost</span>
+                            <span class="detail-value" id="viewOrderCost"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-item" style="margin-top: 20px;">
+                    <i class="fas fa-file-alt"></i>
+                    <div>
+                        <span class="detail-label">Description</span>
+                        <span class="detail-value" id="viewOrderDescription"></span>
+                    </div>
+                </div>
+                
+                <div class="detail-actions">
+                    <button class="btn-primary" id="closeViewOrderBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Work Order Modal -->
+    <div class="modal" id="editOrderModal">
+        <div class="modal-overlay" id="editOrderOverlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Edit Work Order</h2>
+                <button class="modal-close" id="closeEditOrder">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form method="POST" id="editOrderForm" class="modal-form">
+                {% csrf_token %}
+                <input type="hidden" id="edit_order_id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_title">Title *</label>
+                        <input type="text" id="edit_title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_status">Status *</label>
+                        <select id="edit_status" name="status" required>
+                            <option value="new">New</option>
+                            <option value="open">Open</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="delayed">Delayed</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_description">Description *</label>
+                    <textarea id="edit_description" name="description" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_category">Category *</label>
+                        <select id="edit_category" name="category" required>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="hvac">HVAC</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="security">Security</option>
+                            <option value="landscaping">Landscaping</option>
+                            <option value="painting">Painting</option>
+                            <option value="carpentry">Carpentry</option>
+                            <option value="pest_control">Pest Control</option>
+                            <option value="general">General Maintenance</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_priority">Priority *</label>
+                        <select id="edit_priority" name="priority" required>
+                            <option value="low">Low</option>
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_contractor">Assign to Contractor</label>
+                        <select id="edit_contractor" name="contractor_id">
+                            <option value="">Unassigned</option>
+                            {% for contractor in contractors %}
+                                <option value="{{ contractor.id }}">{{ contractor.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_cost">Cost (Ksh)</label>
+                        <input type="number" id="edit_cost" name="cost" step="0.01">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelEditBtn">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteOrderModal">
+        <div class="modal-overlay" id="deleteOrderOverlay"></div>
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header" style="background: #fee2e2; border-bottom-color: #fecaca;">
+                <h2 style="color: #991b1b; display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirm Delete
+                </h2>
+                <button class="modal-close" id="closeDeleteOrder">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div style="padding: 32px 24px;">
+                <p style="font-size: 16px; color: #1f2937; margin-bottom: 8px; font-weight: 500;">
+                    Are you sure you want to delete work order <strong id="deleteOrderId"></strong>?
+                </p>
+                <p style="font-size: 14px; color: #6b7280;">
+                    This action cannot be undone.
+                </p>
+            </div>
+            
+            <div class="form-actions" style="padding: 0 24px 24px;">
+                <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete Order
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/services.js' %}"></script>
+</body>
+</html>

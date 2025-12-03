@@ -40,7 +40,7 @@
                     <i class="fas fa-parking"></i>
                     <span>Parking</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="{% url 'services' %}" class="nav-item">
                     <i class="fas fa-tools"></i>
                     <span>Services</span>
                 </a>
@@ -76,7 +76,7 @@
             <header class="top-nav">
                <div class="nav-links">
     <a href="{% url 'dashboard' %}" class="nav-link active">Overview</a>
-    <a href="#" class="nav-link">Work Orders</a>
+    <a href="{% url 'services' %}" class="nav-link">Work Orders</a>
     <a href="{% url 'rent_collection' %}" class="nav-link">Rent Collection</a>
     <a href="#" class="nav-link">Access</a>
 </div>

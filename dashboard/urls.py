@@ -20,4 +20,8 @@ urlpatterns = [
     path('rent/', views.rent_collection_view, name='rent_collection'),
     path('rent/record/<int:payment_id>/', views.record_payment_view, name='record_payment'),
     path('rent/generate/', views.generate_invoices_view, name='generate_invoices'),
+    path('services/', views.services_view, name='services'),
+    path('services/create/', views.create_work_order_view, name='create_work_order'),
+    path('services/update/<int:order_id>/', views.update_work_order_view, name='update_work_order'),
+    path('services/delete/<int:order_id>/', views.delete_work_order_view, name='delete_work_order'),
 ]

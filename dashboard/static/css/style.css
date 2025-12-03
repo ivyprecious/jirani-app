@@ -1768,3 +1768,36 @@ body {
     outline: none;
     border-color: #667eea;
 }
+
+/* Services Page Styles */
+
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.priority-badge.urgent {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.priority-badge.high {
+    background: #fed7aa;
+    color: #92400e;
+}
+
+.priority-badge.normal {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.priority-badge.low {
+    background: #f3f4f6;
+    color: #6b7280;
+}

@@ -111,6 +111,7 @@ class WorkOrder(models.Model):
         ('new', 'New'),
         ('open', 'Open'),
         ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
         ('delayed', 'Delayed'),
     ]
     
@@ -118,19 +119,47 @@ class WorkOrder(models.Model):
         ('urgent', 'Urgent'),
         ('high', 'High'),
         ('normal', 'Normal'),
+        ('low', 'Low'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('plumbing', 'Plumbing'),
+        ('electrical', 'Electrical'),
+        ('hvac', 'HVAC'),
+        ('cleaning', 'Cleaning'),
+        ('security', 'Security'),
+        ('landscaping', 'Landscaping'),
+        ('painting', 'Painting'),
+        ('carpentry', 'Carpentry'),
+        ('pest_control', 'Pest Control'),
+        ('general', 'General Maintenance'),
     ]
     
     order_id = models.CharField(max_length=10, unique=True)
+    title = models.CharField(max_length=200, default='')
+    description = models.TextField(default='')
     unit_number = models.CharField(max_length=10)
-    category = models.CharField(max_length=50)
-    assigned_to = models.CharField(max_length=100)
-    days_late = models.IntegerField(default=0)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    assigned_to = models.ForeignKey('Subcontractor', on_delete=models.SET_NULL, null=True, blank=True, related_name='work_orders')
+    resident = models.ForeignKey('Resident', on_delete=models.CASCADE, null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    days_late = models.IntegerField(default=0)
+    due_date = models.DateField(null=True, blank=True)
+    completed_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.order_id} - Unit {self.unit_number}"
+        return f"{self.order_id} - {self.title if self.title else self.category}"
+    
+    @property
+    def contractor_name(self):
+        return self.assigned_to.name if self.assigned_to else 'Unassigned'
 
 class Unit(models.Model):
     UNIT_STATUS = [
@@ -216,8 +245,8 @@ class Subcontractor(models.Model):
         return f"{self.name} - {self.get_category_display()}"
     
     def active_work_orders_count(self):
-        """Count active work orders assigned to this contractor"""
-        return WorkOrder.objects.filter(
-            assigned_to=self.name,
-            status__in=['new', 'open', 'in_progress']
-        ).count()
+     """Count active work orders assigned to this contractor"""
+     return WorkOrder.objects.filter(
+        assigned_to=self,
+        status__in=['new', 'open', 'in_progress']
+    ).count()
