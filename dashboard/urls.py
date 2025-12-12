@@ -24,4 +24,9 @@ urlpatterns = [
     path('services/create/', views.create_work_order_view, name='create_work_order'),
     path('services/update/<int:order_id>/', views.update_work_order_view, name='update_work_order'),
     path('services/delete/<int:order_id>/', views.delete_work_order_view, name='delete_work_order'),
+    path('building/', views.building_view, name='building'),
+    path('building/create/', views.create_unit_view, name='create_unit'),
+    path('building/update/<int:unit_id>/', views.update_unit_view, name='update_unit'),
+    path('building/assign/<int:unit_id>/', views.assign_tenant_to_unit_view, name='assign_tenant_to_unit'),
+    path('building/delete/<int:unit_id>/', views.delete_unit_view, name='delete_unit')
 ]

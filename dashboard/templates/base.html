@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}JIRANI{% endblock %}</title>
+
+    {% load static %}
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body style="background:#F3F4F6; margin:0; font-family:Arial, sans-serif;">
+
+    <!-- NAVBAR -->
+    <header style="background:white; padding:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem;">
+        <h2 style="margin:0; font-weight:600;">JIRANI</h2>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- EXTRA JS (per page scripts) -->
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import Resident, Payment, Request, WorkOrder, Unit, ParkingSlot, Subcontractor
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Max
 from datetime import date, datetime
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -813,3 +813,195 @@ def delete_work_order_view(request, order_id):
         messages.error(request, f'Error deleting work order: {str(e)}')
     
     return redirect('services')
+
+@login_required
+def building_view(request):
+    # Get all units
+    all_units = Unit.objects.select_related('resident__user').all()
+    
+    # Get filter parameters
+    filter_status = request.GET.get('status', 'all')
+    filter_type = request.GET.get('type', 'all')
+    search_query = request.GET.get('search', '')
+    
+    # Apply filters
+    units = all_units
+    
+    if filter_status != 'all':
+        units = units.filter(status=filter_status)
+    
+    if filter_type != 'all':
+        units = units.filter(unit_type=filter_type)
+    
+    if search_query:
+        units = units.filter(
+            Q(unit_number__icontains=search_query) |
+            Q(resident__user__first_name__icontains=search_query) |
+            Q(resident__user__last_name__icontains=search_query)
+        )
+    
+    # Calculate statistics
+    total_units = all_units.count()
+    occupied_units = all_units.filter(status='occupied').count()
+    vacant_units = all_units.filter(status='vacant').count()
+    maintenance_units = all_units.filter(status='maintenance').count()
+    
+    # Calculate occupancy rate
+    occupancy_rate = 0
+    if total_units > 0:
+        occupancy_rate = round((occupied_units / total_units) * 100, 1)
+    
+    # Get total floors
+    total_floors = all_units.aggregate(Max('floor'))['floor__max'] or 0
+    
+    # Get available residents for assignment
+    available_residents = Resident.objects.filter(
+    is_active=True,  # or status='active' if that's your field
+    unit_number__in=['', None]  # tenants with no unit assigned
+).select_related('user')
+    
+    stats = {
+        'total_units': total_units,
+        'occupied': occupied_units,
+        'vacant': vacant_units,
+        'maintenance': maintenance_units,
+        'occupancy_rate': occupancy_rate,
+        'total_floors': total_floors,
+    }
+    
+    context = {
+        'units': units.order_by('unit_number'),
+        'stats': stats,
+        'filter_status': filter_status,
+        'filter_type': filter_type,
+        'search_query': search_query,
+        'available_residents': available_residents,
+    }
+    
+    return render(request, 'dashboard/building.html', context)
+
+
+@login_required
+def create_unit_view(request):
+    if request.method == 'POST':
+        try:
+            unit_number = request.POST.get('unit_number')
+            unit_type = request.POST.get('unit_type')
+            floor = request.POST.get('floor')
+            size_sqm = request.POST.get('size_sqm')
+            rent_amount = request.POST.get('rent_amount')
+            status = request.POST.get('status')
+            description = request.POST.get('description', '')
+            
+            # Create unit
+            Unit.objects.create(
+                unit_number=unit_number,
+                unit_type=unit_type,
+                floor=floor,
+                size_sqm=size_sqm,
+                rent_amount=rent_amount,
+                status=status,
+                description=description
+            )
+            
+            messages.success(request, f'Unit {unit_number} created successfully!')
+            return redirect('building')
+            
+        except Exception as e:
+            messages.error(request, f'Error creating unit: {str(e)}')
+    
+    return redirect('building')
+
+
+@login_required
+def update_unit_view(request, unit_id):
+    if request.method == 'POST':
+        try:
+            unit = Unit.objects.get(id=unit_id)
+            
+            unit.unit_number = request.POST.get('unit_number')
+            unit.unit_type = request.POST.get('unit_type')
+            unit.floor = request.POST.get('floor')
+            unit.size_sqm = request.POST.get('size_sqm')
+            unit.rent_amount = request.POST.get('rent_amount')
+            unit.status = request.POST.get('status')
+            unit.description = request.POST.get('description', '')
+            
+            unit.save()
+            
+            messages.success(request, f'Unit {unit.unit_number} updated successfully!')
+            return redirect('building')
+            
+        except Unit.DoesNotExist:
+            messages.error(request, 'Unit not found')
+        except Exception as e:
+            messages.error(request, f'Error updating unit: {str(e)}')
+    
+    return redirect('building')
+
+
+@login_required
+def assign_tenant_to_unit_view(request, unit_id):
+    if request.method == 'POST':
+        try:
+            unit = Unit.objects.get(id=unit_id)
+            resident_id = request.POST.get('resident_id')
+            
+            if resident_id:
+                resident = Resident.objects.get(id=resident_id)
+                
+                # Unassign any previous unit for this resident
+                if hasattr(resident, 'assigned_unit') and resident.assigned_unit:
+                    old_unit = resident.assigned_unit
+                    old_unit.resident = None
+                    old_unit.status = 'vacant'
+                    old_unit.save()
+                
+                # Assign to new unit
+                unit.resident = resident
+                unit.status = 'occupied'
+                
+                # Update resident's unit_number
+                resident.unit_number = unit.unit_number
+                resident.monthly_rent = unit.rent_amount
+                resident.save()
+                
+                unit.save()
+                
+                messages.success(request, f'{resident.user.get_full_name()} assigned to Unit {unit.unit_number}!')
+            else:
+                # Unassign tenant
+                if unit.resident:
+                    unit.resident = None
+                    unit.status = 'vacant'
+                    unit.save()
+                    messages.success(request, f'Unit {unit.unit_number} is now vacant')
+            
+            return redirect('building')
+            
+        except Unit.DoesNotExist:
+            messages.error(request, 'Unit not found')
+        except Resident.DoesNotExist:
+            messages.error(request, 'Resident not found')
+        except Exception as e:
+            messages.error(request, f'Error assigning tenant: {str(e)}')
+    
+    return redirect('building')
+
+
+@login_required
+def delete_unit_view(request, unit_id):
+    try:
+        unit = Unit.objects.get(id=unit_id)
+        unit_number = unit.unit_number
+        unit.delete()
+        
+        messages.success(request, f'Unit {unit_number} deleted successfully')
+        return redirect('building')
+        
+    except Unit.DoesNotExist:
+        messages.error(request, 'Unit not found')
+    except Exception as e:
+        messages.error(request, f'Error deleting unit: {str(e)}')
+    
+    return redirect('building')

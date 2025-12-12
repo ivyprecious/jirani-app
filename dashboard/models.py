@@ -250,3 +250,48 @@ class Subcontractor(models.Model):
         assigned_to=self,
         status__in=['new', 'open', 'in_progress']
     ).count()
+
+class Unit(models.Model):
+    UNIT_STATUS = [
+        ('vacant', 'Vacant'),
+        ('occupied', 'Occupied'),
+        ('maintenance', 'Under Maintenance'),
+    ]
+    
+    UNIT_TYPE_CHOICES = [
+        ('studio', 'Studio'),
+        ('1br', '1 Bedroom'),
+        ('2br', '2 Bedrooms'),
+        ('3br', '3 Bedrooms'),
+        ('4br', '4 Bedrooms'),
+    ]
+    
+    unit_number = models.CharField(max_length=10, unique=True)
+    unit_type = models.CharField(max_length=20, choices=UNIT_TYPE_CHOICES, default='1br')
+    floor = models.IntegerField(default=1)
+    size_sqm = models.DecimalField(max_digits=6, decimal_places=2, default=0, help_text="Size in square meters")
+    rent_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=UNIT_STATUS, default='vacant')
+    resident = models.OneToOneField(Resident, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_unit')
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='units/', null=True, blank=True)
+    last_maintenance = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    resident = models.ForeignKey('Resident', on_delete=models.SET_NULL, null=True, blank=True, related_name='unit')
+    class Meta:
+        ordering = ['unit_number']
+    
+    def __str__(self):
+        return f"Unit {self.unit_number}"
+    
+    @property
+    def tenant_name(self):
+        if self.resident:
+            return self.resident.user.get_full_name()
+        return 'Vacant'
+    
+    @property
+    def tenant_phone(self):
+        if self.resident:
+            return self.resident.phone
+        return '-'
