@@ -1373,6 +1373,7 @@ body {
     padding: 24px 32px;
     overflow-y: auto;
     height: calc(100vh - 73px);
+    position: relative;
 }
 
 /* Parking Rules Card */
@@ -1424,12 +1425,107 @@ body {
     margin-top: 2px;
     flex-shrink: 0;
 }
+/* Toolbar */
+.parking-toolbar {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
 
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+}
+
+.search-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-form i {
+    position: absolute;
+    left: 12px;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.search-form input {
+    padding: 10px 12px 10px 36px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 300px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-form input:focus {
+    border-color: #667eea;
+}
+
+.btn-primary {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+}
 /* Parking Grid */
 .parking-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
+    position: relative;
+    z-index: 1;
 }
 
 .parking-slot-card {
@@ -1439,6 +1535,7 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.2s;
     border: 2px solid #e5e7eb;
+    position: relative;
 }
 
 .parking-slot-card:hover {
@@ -1800,4 +1897,82 @@ body {
 .priority-badge.low {
     background: #f3f4f6;
     color: #6b7280;
+}
+
+/* ========================================
+   CUSTOM CONFIRM DIALOGS
+   ======================================== */
+
+.custom-confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.custom-confirm-dialog {
+    background: white;
+    border-radius: 16px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+.custom-confirm-header {
+    background: #fee2e2;
+    border-bottom: 1px solid #fecaca;
+    padding: 24px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.custom-confirm-header i {
+    font-size: 24px;
+    color: #991b1b;
+}
+
+.custom-confirm-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #991b1b;
+    margin: 0;
+}
+
+.custom-confirm-body {
+    padding: 32px 24px;
+}
+
+.custom-confirm-body p {
+    font-size: 16px;
+    color: #1f2937;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.custom-confirm-body .warning-text {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.custom-confirm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 0 24px 24px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

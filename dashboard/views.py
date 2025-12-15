@@ -650,64 +650,55 @@ def generate_invoices_view(request):
 @login_required
 def services_view(request):
     # Get all work orders
-    all_work_orders = WorkOrder.objects.select_related('assigned_to', 'resident').all()
+    all_orders = WorkOrder.objects.select_related('assigned_to', 'resident').all()
     
     # Get filter parameters
     filter_status = request.GET.get('status', 'all')
     filter_priority = request.GET.get('priority', 'all')
-    filter_category = request.GET.get('category', 'all')
     search_query = request.GET.get('search', '')
     
     # Apply filters
-    work_orders = all_work_orders
+    orders = all_orders
     
     if filter_status != 'all':
-        work_orders = work_orders.filter(status=filter_status)
+        orders = orders.filter(status=filter_status)
     
     if filter_priority != 'all':
-        work_orders = work_orders.filter(priority=filter_priority)
-    
-    if filter_category != 'all':
-        work_orders = work_orders.filter(category=filter_category)
+        orders = orders.filter(priority=filter_priority)
     
     if search_query:
-        work_orders = work_orders.filter(
+        orders = orders.filter(
             Q(order_id__icontains=search_query) |
             Q(title__icontains=search_query) |
             Q(unit_number__icontains=search_query) |
-            Q(description__icontains=search_query)
+            Q(assigned_to__name__icontains=search_query)
         )
     
     # Calculate statistics
     stats = {
-        'total': all_work_orders.count(),
-        'new': all_work_orders.filter(status='new').count(),
-        'open': all_work_orders.filter(status='open').count(),
-        'in_progress': all_work_orders.filter(status='in_progress').count(),
-        'completed': all_work_orders.filter(status='completed').count(),
-        'delayed': all_work_orders.filter(status='delayed').count(),
-        'urgent': all_work_orders.filter(priority='urgent').count(),
+        'total': all_orders.count(),
+        'new': all_orders.filter(status='new').count(),
+        'open': all_orders.filter(status='open').count(),
+        'in_progress': all_orders.filter(status='in_progress').count(),
+        'completed': all_orders.filter(status='completed').count(),
+        'urgent': all_orders.filter(priority='urgent').count(),
     }
     
-    # Get available contractors
+    # Get residents and contractors for create form
+    residents = Resident.objects.filter(status='active')
     contractors = Subcontractor.objects.filter(status='active')
     
-    # Get available units
-    residents = Resident.objects.filter(status='active')
-    
     context = {
-        'work_orders': work_orders.order_by('-created_at'),
+        'work_orders': orders.order_by('-created_at'),
         'stats': stats,
         'filter_status': filter_status,
         'filter_priority': filter_priority,
-        'filter_category': filter_category,
         'search_query': search_query,
-        'contractors': contractors,
         'residents': residents,
+        'contractors': contractors,
     }
     
     return render(request, 'dashboard/services.html', context)
-
 
 @login_required
 def create_work_order_view(request):

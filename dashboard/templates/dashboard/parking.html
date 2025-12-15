@@ -20,15 +20,15 @@
             </div>
             
             <nav class="nav-menu">
-                <a href="{% url 'dashboard' %}" class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     <i class="fas fa-th-large"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="{% url 'building' %}" class="nav-item">
+                <a href="{% url 'building' %}" class="nav-item {% if request.resolver_match.url_name == 'building' %}active{% endif %}">
                     <i class="fas fa-building"></i>
                     <span>Building</span>
                 </a>
-                <a href="{% url 'tenants' %}" class="nav-item">
+                <a href="{% url 'tenants' %}" class="nav-item {% if request.resolver_match.url_name == 'tenants' %}active{% endif %}">
                     <i class="fas fa-users"></i>
                     <span>Tenants</span>
                 </a>
@@ -36,15 +36,15 @@
                     <i class="fas fa-file-alt"></i>
                     <span>Reports</span>
                 </a>
-                <a href="{% url 'parking' %}" class="nav-item active">
+                <a href="{% url 'parking' %}" class="nav-item {% if request.resolver_match.url_name == 'parking' %}active{% endif %}">
                     <i class="fas fa-parking"></i>
                     <span>Parking</span>
                 </a>
-                 <a href="{% url 'services' %}" class="nav-item">
+                <a href="{% url 'services' %}" class="nav-item {% if request.resolver_match.url_name == 'services' %}active{% endif %}">
                     <i class="fas fa-tools"></i>
                     <span>Services</span>
                 </a>
-                <a href="{% url 'subcontractors' %}" class="nav-item">
+                <a href="{% url 'subcontractors' %}" class="nav-item {% if request.resolver_match.url_name == 'subcontractors' %}active{% endif %}">
                     <i class="fas fa-user-tie"></i>
                     <span>Subcontractors</span>
                 </a>
@@ -86,24 +86,6 @@
                             <i class="fas fa-user-circle"></i>
                             <span>My Profile</span>
                         </a>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-bell"></i>
-                            <span>Notifications</span>
-                            <span class="badge-count">3</span>
-                        </a>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-envelope"></i>
-                            <span>Messages</span>
-                        </a>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-question-circle"></i>
-                            <span>Help & Support</span>
-                        </a>
-                        <div class="dropdown-divider"></div>
                         <a href="{% url 'logout' %}" class="dropdown-item logout">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Log Out</span>
@@ -130,6 +112,22 @@
                     </div>
                 {% endif %}
                 
+                <!-- Parking Rules Section -->
+                <div class="parking-rules-card">
+                    <div class="rules-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Parking Rules & Regulations</h3>
+                    </div>
+                    <div class="rules-list">
+                        {% for rule in parking_rules %}
+                        <div class="rule-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>{{ rule }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <!-- Stats Cards -->
                 <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="stat-card">
@@ -162,24 +160,8 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Parking Rules Section -->
-                <div class="parking-rules-card">
-                    <div class="rules-header">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Parking Rules & Regulations</h3>
-                    </div>
-                    <div class="rules-list">
-                        {% for rule in parking_rules %}
-                        <div class="rule-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>{{ rule }}</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                
-                <!-- Filters and Search -->
+
+                <!-- Filters and Search Bar -->
                 <div class="tenants-toolbar">
                     <div class="filter-buttons">
                         <a href="?status=all" class="filter-btn {% if filter_status == 'all' %}active{% endif %}">
@@ -192,8 +174,7 @@
                             <i class="fas fa-circle"></i> Available
                         </a>
                     </div>
-                </div>
-                    
+
                     <div class="search-actions">
                         <form method="GET" class="search-form">
                             <i class="fas fa-search"></i>
@@ -204,8 +185,8 @@
                         </button>
                     </div>
                 </div>
-                
-        <!-- Parking Slots Grid -->
+
+                <!-- Parking Slots Grid -->
                 <div class="parking-grid">
                     {% for slot in slots %}
                     <div class="parking-slot-card {% if slot.status == 'assigned' %}assigned{% else %}available{% endif %}">
@@ -257,15 +238,13 @@
             </div>
         </main>
     </div>
-    
-    <script src="{% static 'js/main.js' %}"></script>
 
     <!-- Assign Parking Modal -->
     <div class="modal" id="assignParkingModal">
         <div class="modal-overlay" id="assignModalOverlay"></div>
         <div class="modal-container">
             <div class="modal-header">
-                <h2>Assign Parking Slot</h2>
+                <h2><i class="fas fa-parking"></i> Assign Parking Slot</h2>
                 <button class="modal-close" id="closeAssignModal">
                     <i class="fas fa-times"></i>
                 </button>
@@ -275,8 +254,8 @@
                 {% csrf_token %}
                 
                 <div class="form-group">
-                    <label for="resident_id">Select Tenant *</label>
-                    <select id="resident_id" name="resident_id" required onchange="updateUnitInfo()">
+                    <label for="resident_id"><i class="fas fa-user"></i> Select Tenant *</label>
+                    <select id="resident_id" name="resident_id" required>
                         <option value="">-- Choose a tenant --</option>
                         {% for resident in active_residents %}
                         <option value="{{ resident.id }}" data-unit="{{ resident.unit_number }}">
@@ -287,7 +266,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="slot_number">Select Parking Slot *</label>
+                    <label for="slot_number"><i class="fas fa-parking"></i> Select Parking Slot *</label>
                     <select id="slot_number" name="slot_number" required>
                         <option value="">-- Choose a parking slot --</option>
                         {% for slot in available_slots %}
@@ -298,7 +277,7 @@
                 
                 <div id="assignmentPreview" style="display: none; padding: 16px; background: #f0f9ff; border-radius: 8px; margin-top: 16px; border-left: 4px solid #667eea;">
                     <div style="font-size: 14px; color: #1f2937; margin-bottom: 4px;">
-                        <strong>Assignment Preview:</strong>
+                        <strong>📍 Assignment Preview:</strong>
                     </div>
                     <div style="font-size: 13px; color: #4b5563;" id="previewText"></div>
                 </div>
@@ -306,7 +285,7 @@
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" id="cancelAssignBtn">Cancel</button>
                     <button type="submit" class="btn-primary">
-                        <i class="fas fa-parking"></i> Assign Parking
+                        <i class="fas fa-check"></i> Assign Parking
                     </button>
                 </div>
             </form>
@@ -314,58 +293,6 @@
     </div>
     
     <script src="{% static 'js/main.js' %}"></script>
-    <script>
-        // Assign Parking Modal
-        const assignBtn = document.getElementById('assignParkingBtn');
-        const assignModal = document.getElementById('assignParkingModal');
-        const assignModalOverlay = document.getElementById('assignModalOverlay');
-        const closeAssignModal = document.getElementById('closeAssignModal');
-        const cancelAssignBtn = document.getElementById('cancelAssignBtn');
-        
-        if (assignBtn) {
-            assignBtn.addEventListener('click', () => {
-                assignModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-            });
-        }
-        
-        function closeAssignModalFunc() {
-            assignModal.classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-        
-        if (closeAssignModal) closeAssignModal.addEventListener('click', closeAssignModalFunc);
-        if (cancelAssignBtn) cancelAssignBtn.addEventListener('click', closeAssignModalFunc);
-        if (assignModalOverlay) assignModalOverlay.addEventListener('click', closeAssignModalFunc);
-        
-        // Update preview when selections change
-        function updateUnitInfo() {
-            const residentSelect = document.getElementById('resident_id');
-            const slotSelect = document.getElementById('slot_number');
-            const preview = document.getElementById('assignmentPreview');
-            const previewText = document.getElementById('previewText');
-            
-            const selectedResident = residentSelect.options[residentSelect.selectedIndex];
-            const selectedSlot = slotSelect.value;
-            
-            if (selectedResident.value && selectedSlot) {
-                const tenantName = selectedResident.text.split(' - ')[0];
-                const unit = selectedResident.getAttribute('data-unit');
-                preview.style.display = 'block';
-                previewText.textContent = `Assigning ${selectedSlot} to ${tenantName} (Unit ${unit})`;
-            } else {
-                preview.style.display = 'none';
-            }
-        }
-        
-        document.getElementById('slot_number')?.addEventListener('change', updateUnitInfo);
-        
-        // Unassign parking
-        function unassignParking(slotId, slotNumber) {
-            if (confirm(`Are you sure you want to unassign ${slotNumber}?\n\nThis will make the slot available.`)) {
-        window.location.href = `/parking/unassign/${slotId}/`;
-    }
-}
-    </script>
+    <script src="{% static 'js/parking.js' %}"></script>
 </body>
 </html>

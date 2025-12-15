@@ -181,31 +181,46 @@
                     </div>
                 </div>
                 
-                <!-- Filters and Actions -->
+               <!-- Filters and Search Bar -->
                 <div class="tenants-toolbar">
-                    <div class="filter-buttons" style="gap: 8px;">
-                        <a href="?status=all" class="filter-btn {% if filter_status == 'all' %}active{% endif %}">
+                    <div class="filter-buttons">
+                        <a href="?status={{ filter_status }}&priority={{ filter_priority }}" 
+                        class="filter-btn {% if not filter_status or filter_status == 'all' %}active{% endif %}">
                             <i class="fas fa-list"></i> All
                         </a>
-                        <a href="?status=new" class="filter-btn {% if filter_status == 'new' %}active{% endif %}">
-                            <i class="fas fa-plus-circle"></i> New
-                        </a>
-                        <a href="?status=in_progress" class="filter-btn {% if filter_status == 'in_progress' %}active{% endif %}">
-                            <i class="fas fa-spinner"></i> In Progress
-                        </a>
-                        <a href="?status=completed" class="filter-btn {% if filter_status == 'completed' %}active{% endif %}">
-                            <i class="fas fa-check"></i> Completed
-                        </a>
-                        <a href="?status=delayed" class="filter-btn {% if filter_status == 'delayed' %}active{% endif %}">
-                            <i class="fas fa-exclamation-circle"></i> Delayed
-                        </a>
-                    </div>
-                    
-                    <div class="search-actions">
-                        <div class="search-form">
-                            <i class="fas fa-search"></i>
-                            <input type="text" placeholder="Search work orders..." id="searchInput" autocomplete="off">
+                        
+                        <!-- Status Dropdown -->
+                        <div class="category-filter">
+                            <select onchange="window.location.href='?status=' + this.value + '&priority={{ filter_priority }}&search={{ search_query }}'">
+                                <option value="all" {% if filter_status == 'all' or not filter_status %}selected{% endif %}>All Statuses</option>
+                                <option value="new" {% if filter_status == 'new' %}selected{% endif %}>New</option>
+                                <option value="open" {% if filter_status == 'open' %}selected{% endif %}>Open</option>
+                                <option value="in_progress" {% if filter_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="delayed" {% if filter_status == 'delayed' %}selected{% endif %}>Delayed</option>
+                            </select>
                         </div>
+                        
+                        <!-- Priority Dropdown -->
+                        <div class="category-filter">
+                            <select onchange="window.location.href='?status={{ filter_status }}&priority=' + this.value + '&search={{ search_query }}'">
+                                <option value="all" {% if filter_priority == 'all' or not filter_priority %}selected{% endif %}>All Priorities</option>
+                                <option value="urgent" {% if filter_priority == 'urgent' %}selected{% endif %}>🔴 Urgent</option>
+                                <option value="high" {% if filter_priority == 'high' %}selected{% endif %}>🟠 High</option>
+                                <option value="normal" {% if filter_priority == 'normal' %}selected{% endif %}>🔵 Normal</option>
+                                <option value="low" {% if filter_priority == 'low' %}selected{% endif %}>⚪ Low</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="search-actions">
+                        <form class="search-form" method="GET">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="search" placeholder="Search work orders..." 
+                                value="{{ search_query }}" id="searchInput" autocomplete="off">
+                            <input type="hidden" name="status" value="{{ filter_status }}">
+                            <input type="hidden" name="priority" value="{{ filter_priority }}">
+                        </form>
                         <button class="btn-primary" id="createWorkOrderBtn">
                             <i class="fas fa-plus"></i> Create Work Order
                         </button>

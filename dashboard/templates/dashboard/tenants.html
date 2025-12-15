@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -547,5 +548,23 @@
     
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/tenants.js' %}"></script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Format all numbers with commas
+    document.querySelectorAll('td strong').forEach(function(element) {
+        if (element.textContent.includes('Ksh.')) {
+            let text = element.textContent;
+            let number = parseFloat(text.replace('Ksh.', '').replace(',', ''));
+            if (!isNaN(number)) {
+                element.textContent = 'Ksh.' + number.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>
