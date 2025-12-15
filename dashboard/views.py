@@ -3,11 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import Resident, Payment, Request, WorkOrder, Unit, ParkingSlot, Subcontractor
-from django.db.models import Count, Q, Max
-from datetime import date, datetime
+from django.db.models import Count, Q, Max, Sum
+from datetime import date, datetime, timedelta
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from django.db.models import Q, Sum
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
@@ -996,3 +995,198 @@ def delete_unit_view(request, unit_id):
         messages.error(request, f'Error deleting unit: {str(e)}')
     
     return redirect('building')
+
+@login_required
+def reports(request):
+    """
+    Main reports page with financial, occupancy, maintenance, and tenant reports
+    """
+    
+    # Get period filter (default to current month)
+    period = request.GET.get('period', 'current_month')
+    
+    # Calculate date ranges
+    today = datetime.now().date()
+    if period == 'current_month':
+        start_date = today.replace(day=1)
+        end_date = today
+    elif period == 'last_month':
+        last_month = today.replace(day=1) - timedelta(days=1)
+        start_date = last_month.replace(day=1)
+        end_date = last_month
+    elif period == 'last_3_months':
+        start_date = today - timedelta(days=90)
+        end_date = today
+    elif period == 'last_6_months':
+        start_date = today - timedelta(days=180)
+        end_date = today
+    elif period == 'year_to_date':
+        start_date = today.replace(month=1, day=1)
+        end_date = today
+    else:
+        start_date = today.replace(day=1)
+        end_date = today
+    
+    # ========================================
+    # FINANCIAL DATA
+    # ========================================
+    
+    payments = Payment.objects.filter(
+        due_date__range=[start_date, end_date]
+    )
+    
+    total_collected = payments.filter(status='paid').aggregate(
+        total=Sum('amount_paid')
+    )['total'] or Decimal('0')
+    
+    outstanding = payments.filter(
+        status__in=['pending', 'partial']
+    ).aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0')
+    
+    overdue = payments.filter(
+        status='overdue'
+    ).aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0')
+    
+    total_expected = payments.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0')
+    
+    collection_rate = 0
+    if total_expected > 0:
+        collection_rate = round((total_collected / total_expected) * 100, 1)
+    
+    financial_data = {
+        'total_collected': total_collected,
+        'outstanding': outstanding,
+        'overdue': overdue,
+        'collection_rate': collection_rate,
+    }
+    
+    # Recent payments for table
+    recent_payments = Payment.objects.filter(
+        paid=True,
+        paid_date__isnull=False
+    ).select_related('resident__user').order_by('-paid_date')[:10]
+    
+    # ========================================
+    # OCCUPANCY DATA
+    # ========================================
+    
+    total_units = Unit.objects.count()
+    occupied_units = Unit.objects.filter(status='occupied').count()
+    vacant_units = Unit.objects.filter(status='vacant').count()
+    
+    occupancy_rate = 0
+    if total_units > 0:
+        occupancy_rate = round((occupied_units / total_units) * 100, 1)
+    
+    occupancy_data = {
+        'total_units': total_units,
+        'occupied': occupied_units,
+        'vacant': vacant_units,
+        'occupancy_rate': occupancy_rate,
+    }
+    
+    # ========================================
+    # MAINTENANCE DATA
+    # ========================================
+    
+    total_orders = WorkOrder.objects.count()
+    completed_orders = WorkOrder.objects.filter(status='completed').count()
+    in_progress_orders = WorkOrder.objects.filter(status='in_progress').count()
+    
+    # Calculate average response time (simplified - in real app, track actual times)
+    avg_response_time = 24  # Placeholder - implement actual calculation
+    
+    maintenance_data = {
+        'total_orders': total_orders,
+        'completed': completed_orders,
+        'in_progress': in_progress_orders,
+        'avg_response_time': avg_response_time,
+    }
+    
+    # Top contractors
+    top_contractors = Subcontractor.objects.filter(
+        status='active'
+    ).annotate(
+        completed_jobs=Count('work_orders', filter=Q(work_orders__status='completed'))
+    ).order_by('-rating', '-completed_jobs')[:5]
+    
+    # Add avg response time to contractors (placeholder)
+    for contractor in top_contractors:
+        contractor.avg_response_time = 18  # Placeholder
+    
+    # ========================================
+    # TENANT REPORTS
+    # ========================================
+    
+    tenant_reports = []
+    residents = Resident.objects.filter(
+        is_active=True
+    ).select_related('user')
+    
+    for resident in residents:
+        # Calculate payment statistics
+        resident_payments = Payment.objects.filter(resident=resident)
+        payment_count = resident_payments.filter(paid=True).count()
+        
+        outstanding_amount = resident_payments.filter(
+            status__in=['pending', 'partial', 'overdue']
+        ).aggregate(
+            total=Sum('amount')
+        )['total'] or Decimal('0')
+        
+        # Create tenant report data
+        tenant_data = {
+            'user': resident.user,
+            'unit_number': resident.unit_number,
+            'move_in_date': resident.move_in_date,
+            'monthly_rent': resident.monthly_rent,
+            'payment_count': payment_count,
+            'outstanding': outstanding_amount,
+            'status': resident.status,
+            'get_status_display': resident.get_status_display,
+        }
+        tenant_reports.append(type('obj', (object,), tenant_data))
+    
+    # ========================================
+    # CONTEXT
+    # ========================================
+    
+    context = {
+        'financial_data': financial_data,
+        'recent_payments': recent_payments,
+        'occupancy_data': occupancy_data,
+        'maintenance_data': maintenance_data,
+        'top_contractors': top_contractors,
+        'tenant_reports': tenant_reports,
+        'period': period,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
+    return render(request, 'dashboard/reports.html', context)
+
+
+@login_required
+def export_report(request, report_type, file_format):
+    """
+    Export reports to PDF or Excel
+    TODO: Implement actual export functionality
+    """
+    # This is a placeholder - implement actual export logic
+    # using libraries like ReportLab (PDF) or openpyxl (Excel)
+    
+    from django.http import HttpResponse
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{report_type}_report.{file_format}"'
+    
+    # TODO: Generate actual report file
+    response.write(b'Report export coming soon...')
+    
+    return response

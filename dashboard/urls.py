@@ -28,5 +28,7 @@ urlpatterns = [
     path('building/create/', views.create_unit_view, name='create_unit'),
     path('building/update/<int:unit_id>/', views.update_unit_view, name='update_unit'),
     path('building/assign/<int:unit_id>/', views.assign_tenant_to_unit_view, name='assign_tenant_to_unit'),
-    path('building/delete/<int:unit_id>/', views.delete_unit_view, name='delete_unit')
+    path('building/delete/<int:unit_id>/', views.delete_unit_view, name='delete_unit'),
+    path('reports/', views.reports, name='reports'),
+    path('reports/export/<str:report_type>/<str:file_format>/', views.export_report, name='export_report')
 ]

@@ -1,0 +1,441 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - Jirani App</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <img src="{% static 'images/Jirani App Logo 1.png' %}" alt="Jirani Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                </div>
+                <h1>JIRANI</h1>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'dashboard' %}" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'building' %}" class="nav-item">
+                    <i class="fas fa-building"></i>
+                    <span>Building</span>
+                </a>
+                <a href="{% url 'tenants' %}" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Tenants</span>
+                </a>
+                <a href="{% url 'reports' %}" class="nav-item active">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="{% url 'parking' %}" class="nav-item">
+                    <i class="fas fa-parking"></i>
+                    <span>Parking</span>
+                </a>
+                <a href="{% url 'services' %}" class="nav-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Services</span>
+                </a>
+                <a href="{% url 'subcontractors' %}" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Subcontractors</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <h2 style="font-size: 24px; font-weight: 700; color: #1f2937;">Reports & Analytics</h2>
+                
+                <div class="user-section">
+                    <i class="fas fa-bell"></i>
+                    <div class="user-profile" id="userProfileBtn">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user.get_full_name }}</div>
+                            <div class="user-role">Manager</div>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">{{ user.get_full_name }}</div>
+                                <div class="user-email">{{ user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="{% url 'logout' %}" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Reports Content -->
+            <div class="reports-page">
+                
+                <!-- Report Type Tabs -->
+                <div class="report-tabs">
+                    <button class="tab-btn active" data-tab="financial">
+                        <i class="fas fa-chart-line"></i> Financial Reports
+                    </button>
+                    <button class="tab-btn" data-tab="occupancy">
+                        <i class="fas fa-home"></i> Occupancy Reports
+                    </button>
+                    <button class="tab-btn" data-tab="maintenance">
+                        <i class="fas fa-tools"></i> Maintenance Reports
+                    </button>
+                    <button class="tab-btn" data-tab="tenants">
+                        <i class="fas fa-users"></i> Tenant Reports
+                    </button>
+                </div>
+
+                <!-- Financial Reports Tab -->
+                <div id="financial" class="tab-content active">
+                    <!-- Date Filter & Export -->
+                    <div class="report-toolbar">
+                        <div class="date-filter">
+                            <label>
+                                <i class="fas fa-calendar"></i> Period:
+                            </label>
+                            <select id="financialPeriod">
+                                <option value="current_month">Current Month</option>
+                                <option value="last_month">Last Month</option>
+                                <option value="last_3_months">Last 3 Months</option>
+                                <option value="last_6_months">Last 6 Months</option>
+                                <option value="year_to_date">Year to Date</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="export-buttons">
+                            <button class="btn-export" onclick="exportReport('pdf')">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </button>
+                            <button class="btn-export" onclick="exportReport('excel')">
+                                <i class="fas fa-file-excel"></i> Export Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Financial Summary Cards -->
+                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #10b981;">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">Ksh.{{ financial_data.total_collected|floatformat:0 }}</div>
+                                <div class="stat-label">Total Collected</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #f59e0b;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">Ksh.{{ financial_data.outstanding|floatformat:0 }}</div>
+                                <div class="stat-label">Outstanding</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #ef4444;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">Ksh.{{ financial_data.overdue|floatformat:0 }}</div>
+                                <div class="stat-label">Overdue</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #667eea;">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ financial_data.collection_rate }}%</div>
+                                <div class="stat-label">Collection Rate</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-line"></i> Payment Trends</h3>
+                            <canvas id="paymentTrendsChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-pie"></i> Payment Status Breakdown</h3>
+                            <canvas id="paymentStatusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Tables -->
+                    <div class="report-tables">
+                        <div class="table-card">
+                            <h3><i class="fas fa-list"></i> Recent Transactions</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Tenant</th>
+                                        <th>Unit</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in recent_payments %}
+                                    <tr>
+                                        <td>{{ payment.paid_date|date:"M d, Y" }}</td>
+                                        <td>{{ payment.resident.user.get_full_name }}</td>
+                                        <td><span class="unit-badge">{{ payment.resident.unit_number }}</span></td>
+                                        <td><strong>Ksh.{{ payment.amount_paid }}</strong></td>
+                                        <td>{{ payment.get_payment_method_display }}</td>
+                                        <td><span class="status-badge {{ payment.status }}">{{ payment.get_status_display }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Occupancy Reports Tab -->
+                <div id="occupancy" class="tab-content">
+                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #667eea;">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ occupancy_data.total_units }}</div>
+                                <div class="stat-label">Total Units</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #10b981;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ occupancy_data.occupied }}</div>
+                                <div class="stat-label">Occupied</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #f59e0b;">
+                                <i class="fas fa-door-open"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ occupancy_data.vacant }}</div>
+                                <div class="stat-label">Vacant</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #8b5cf6;">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ occupancy_data.occupancy_rate }}%</div>
+                                <div class="stat-label">Occupancy Rate</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-area"></i> Occupancy Trends</h3>
+                            <canvas id="occupancyTrendsChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-bar"></i> Unit Types Distribution</h3>
+                            <canvas id="unitTypesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maintenance Reports Tab -->
+                <div id="maintenance" class="tab-content">
+                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #667eea;">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ maintenance_data.total_orders }}</div>
+                                <div class="stat-label">Total Work Orders</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #10b981;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ maintenance_data.completed }}</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #f59e0b;">
+                                <i class="fas fa-spinner"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ maintenance_data.in_progress }}</div>
+                                <div class="stat-label">In Progress</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #ef4444;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">{{ maintenance_data.avg_response_time }}h</div>
+                                <div class="stat-label">Avg Response Time</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-bar"></i> Work Orders by Category</h3>
+                            <canvas id="maintenanceCategoryChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3><i class="fas fa-chart-line"></i> Monthly Maintenance Costs</h3>
+                            <canvas id="maintenanceCostChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="report-tables">
+                        <div class="table-card">
+                            <h3><i class="fas fa-award"></i> Contractor Performance</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Contractor</th>
+                                        <th>Category</th>
+                                        <th>Completed Jobs</th>
+                                        <th>Avg Response (hrs)</th>
+                                        <th>Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contractor in top_contractors %}
+                                    <tr>
+                                        <td><strong>{{ contractor.name }}</strong></td>
+                                        <td><span class="category-badge category-{{ contractor.category }}">{{ contractor.get_category_display }}</span></td>
+                                        <td>{{ contractor.completed_jobs }}</td>
+                                        <td>{{ contractor.avg_response_time }}</td>
+                                        <td>
+                                            <div class="rating-display">
+                                                <i class="fas fa-star" style="color: #fbbf24;"></i>
+                                                <strong>{{ contractor.rating }}</strong>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tenant Reports Tab -->
+                <div id="tenants" class="tab-content">
+                    <div class="report-toolbar">
+                        <div class="search-form">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="tenantSearch" placeholder="Search tenant...">
+                        </div>
+                        <button class="btn-export" onclick="exportTenantReport()">
+                            <i class="fas fa-download"></i> Export All Tenants
+                        </button>
+                    </div>
+
+                    <div class="report-tables">
+                        <div class="table-card">
+                            <h3><i class="fas fa-users"></i> Tenant Payment History</h3>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tenant</th>
+                                        <th>Unit</th>
+                                        <th>Move-in Date</th>
+                                        <th>Monthly Rent</th>
+                                        <th>Payments Made</th>
+                                        <th>Outstanding</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tenant in tenant_reports %}
+                                    <tr>
+                                        <td>
+                                            <div class="tenant-info">
+                                                <div class="tenant-avatar">
+                                                    {{ tenant.user.first_name.0 }}{{ tenant.user.last_name.0 }}
+                                                </div>
+                                                <div class="tenant-details">
+                                                    <div class="tenant-name">{{ tenant.user.get_full_name }}</div>
+                                                    <div class="tenant-email">{{ tenant.user.email }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="unit-badge">{{ tenant.unit_number }}</span></td>
+                                        <td>{{ tenant.move_in_date|date:"M d, Y" }}</td>
+                                        <td><strong>Ksh.{{ tenant.monthly_rent }}</strong></td>
+                                        <td>{{ tenant.payment_count }}</td>
+                                        <td class="{% if tenant.outstanding > 0 %}text-danger{% endif %}">
+                                            Ksh.{{ tenant.outstanding|floatformat:0 }}
+                                        </td>
+                                        <td><span class="status-badge {{ tenant.status }}">{{ tenant.get_status_display }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/reports.js' %}"></script>
+</body>
+</html>

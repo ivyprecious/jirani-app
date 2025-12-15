@@ -32,7 +32,7 @@
                     <i class="fas fa-users"></i>
                     <span>Tenants</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="{% url 'reports' %}" class="nav-item">
                     <i class="fas fa-file-alt"></i>
                     <span>Reports</span>
                 </a>
@@ -205,8 +205,6 @@
                                 <option value="studio" {% if filter_type == 'studio' %}selected{% endif %}>Studio</option>
                                 <option value="1br" {% if filter_type == '1br' %}selected{% endif %}>1 Bedroom</option>
                                 <option value="2br" {% if filter_type == '2br' %}selected{% endif %}>2 Bedrooms</option>
-                                <option value="3br" {% if filter_type == '3br' %}selected{% endif %}>3 Bedrooms</option>
-                                <option value="4br" {% if filter_type == '4br' %}selected{% endif %}>4 Bedrooms</option>
                             </select>
                         </div>
                     </div>
@@ -579,5 +577,7 @@
         }
     });
     </script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/building.js' %}"></script>
 </body>
 </html>
