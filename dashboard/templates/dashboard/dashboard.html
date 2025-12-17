@@ -13,14 +13,14 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
-    <div class="logo-icon">
-        <img src="{% static 'images/Jirani App Logo 1.png' %}" alt="Jirani Logo" style="width: 32px; height: 32px; object-fit: contain;">
-    </div>
-    <h1>JIRANI</h1>
-</div>
+                <div class="logo-icon">
+                    <img src="{% static 'images/Jirani App Logo 1.png' %}" alt="Jirani Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                </div>
+                <h1>JIRANI</h1>
+            </div>
             
             <nav class="nav-menu">
-                <a href="#" class="nav-item active">
+                <a href="{% url 'dashboard' %}" class="nav-item active">
                     <i class="fas fa-th-large"></i>
                     <span>Dashboard</span>
                 </a>
@@ -50,23 +50,26 @@
                 </a>
             </nav>
             
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search Dialogue">
-            </div>
-            
-            <div class="contacts-list">
-                {% for request in new_requests %}
-                <div class="contact-item">
-                    <div class="contact-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="contact-info">
-                        <div class="contact-name">{{ request.resident.user.get_full_name }}</div>
-                        <div class="contact-message">{{ request.title|truncatewords:5 }}</div>
-                    </div>
+            <!-- Quick Messages -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h4>Recent Messages</h4>
+                    <span class="badge-count">{{ recent_messages_count }}</span>
                 </div>
-                {% endfor %}
+                <div class="contacts-list">
+                    {% for message in recent_messages %}
+                    <div class="contact-item">
+                        <div class="contact-avatar">
+                            {{ message.sender_initials }}
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">{{ message.sender_name }}</div>
+                            <div class="contact-message">{{ message.preview }}</div>
+                        </div>
+                        <div class="message-time">{{ message.time_ago }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </aside>
         
@@ -74,213 +77,331 @@
         <main class="main-content">
             <!-- Top Navigation -->
             <header class="top-nav">
-               <div class="nav-links">
-    <a href="{% url 'dashboard' %}" class="nav-link active">Overview</a>
-    <a href="{% url 'services' %}" class="nav-link">Work Orders</a>
-    <a href="{% url 'rent_collection' %}" class="nav-link">Rent Collection</a>
-    <a href="#" class="nav-link">Access</a>
-</div>
+                <div>
+                    <h2 style="font-size: 24px; font-weight: 700; color: #1f2937;">Dashboard Overview</h2>
+                    <p style="font-size: 14px; color: #6b7280; margin-top: 4px;">Welcome back, {{ user.get_full_name }}!</p>
+                </div>
                 
                 <div class="user-section">
-    <i class="fas fa-bell"></i>
-    <div class="user-profile" id="userProfileBtn">
-        <div class="user-avatar">
-            <i class="fas fa-user"></i>
-        </div>
-        <div class="user-info">
-            <div class="user-name">{{ user.get_full_name }}</div>
-            <div class="user-role">Manager</div>
-        </div>
-        <i class="fas fa-chevron-down"></i>
-    </div>
-    
-    <!-- Dropdown Menu -->
-    <div class="dropdown-menu" id="dropdownMenu">
-        <div class="dropdown-header">
-            <div class="user-avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="user-info">
-                <div class="user-name">{{ user.get_full_name }}</div>
-                <div class="user-email">{{ user.email }}</div>
-            </div>
-        </div>
-        <div class="dropdown-divider"></div>
-        <a href="#" class="dropdown-item">
-            <i class="fas fa-user-circle"></i>
-            <span>My Profile</span>
-        </a>
-        <a href="#" class="dropdown-item">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-        </a>
-        <a href="#" class="dropdown-item">
-            <i class="fas fa-bell"></i>
-            <span>Notifications</span>
-            <span class="badge-count">3</span>
-        </a>
-        <a href="#" class="dropdown-item">
-            <i class="fas fa-envelope"></i>
-            <span>Messages</span>
-        </a>
-        <a href="#" class="dropdown-item">
-            <i class="fas fa-question-circle"></i>
-            <span>Help & Support</span>
-        </a>
-        <div class="dropdown-divider"></div>
-        <a href="{% url 'logout' %}" class="dropdown-item logout">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Log Out</span>
-        </a>
-    </div>
-    
-    <button class="month-btn">This Month</button>
-</div>
-            </header>
-            
-            <!-- Dashboard Grid -->
-            <div class="dashboard-grid">
-                <!-- Left Column -->
-                <div class="left-column">
-                    <!-- Building Stats Card -->
-                    <div class="card building-card">
-                        <img src="{% static 'images/building.jpg' %}" alt="Building" class="building-image">
-                        <div class="building-stats">
-                            <div class="stat-item">
-                                <div class="stat-number">{{ stats.total_residents }}</div>
-                                <div class="stat-label">Residents</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">{{ stats.total_units }}</div>
-                                <div class="stat-label">Units</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">{{ stats.vacant_units }}</div>
-                                <div class="stat-label">Vacant</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number">{{ stats.upcoming_units }}</div>
-                                <div class="stat-label">Upcoming</div>
-                            </div>
+                    <i class="fas fa-bell"></i>
+                    <div class="user-profile" id="userProfileBtn">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
                         </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 87%;"></div>
+                        <div class="user-info">
+                            <div class="user-name">{{ user.get_full_name }}</div>
+                            <div class="user-role">Manager</div>
                         </div>
-                        <div class="progress-label">Lesser by 87%</div>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
                     
-                    <!-- Work Orders Chart -->
-                    <div class="card work-orders-card">
-                        <h3>Work Orders</h3>
-                        <div class="chart">
-                            <div class="bar-chart">
-                                <div class="bar" style="height: 45%;">
-                                    <span class="bar-value">{{ work_order_stats.new }}</span>
-                                </div>
-                                <div class="bar" style="height: 70%;">
-                                    <span class="bar-value">{{ work_order_stats.open }}</span>
-                                </div>
-                                <div class="bar" style="height: 30%;">
-                                    <span class="bar-value">{{ work_order_stats.in_progress }}</span>
-                                </div>
-                                <div class="bar" style="height: 15%;">
-                                    <span class="bar-value">{{ work_order_stats.delayed }}</span>
-                                </div>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
                             </div>
-                            <div class="chart-labels">
-                                <span>New</span>
-                                <span>Open</span>
-                                <span>In Progress</span>
-                                <span>Delayed</span>
+                            <div class="user-info">
+                                <div class="user-name">{{ user.get_full_name }}</div>
+                                <div class="user-email">{{ user.email }}</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="{% url 'logout' %}" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Content -->
+            <div class="dashboard-page">
+                
+                <!-- Key Metrics Grid -->
+                <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 24px;">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #667eea;">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ dashboard_stats.total_units }}</div>
+                            <div class="stat-label">Total Units</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i> {{ dashboard_stats.occupancy_rate }}% occupied
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #10b981;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ dashboard_stats.total_residents }}</div>
+                            <div class="stat-label">Active Tenants</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i> {{ dashboard_stats.new_this_month }} new
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f59e0b;">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">Ksh.{{ dashboard_stats.monthly_revenue }}</div>
+                            <div class="stat-label">Monthly Revenue</div>
+                            <div class="stat-change positive">
+                                <i class="fas fa-arrow-up"></i> {{ dashboard_stats.collection_rate }}% collected
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #ef4444;">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ dashboard_stats.pending_issues }}</div>
+                            <div class="stat-label">Pending Issues</div>
+                            <div class="stat-change {% if dashboard_stats.urgent_count > 0 %}negative{% endif %}">
+                                <i class="fas fa-exclamation-triangle"></i> {{ dashboard_stats.urgent_count }} urgent
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #8b5cf6;">
+                            <i class="fas fa-parking"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ dashboard_stats.parking_utilization }}%</div>
+                            <div class="stat-label">Parking Utilization</div>
+                            <div class="stat-change">
+                                {{ dashboard_stats.available_parking }} available
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Right Column -->
-                <div class="right-column">
-                    <!-- Payment Card -->
-                    <div class="card payment-card">
-                        <h3>Payment</h3>
-                        <div class="payment-grid">
-                            <div class="payment-item">
-                                <div class="payment-amount">Ksh.{{ payment_summary.rent.amount|default:"0" }}</div>
-                                <div class="payment-label">Rent</div>
+
+                <!-- Main Dashboard Grid -->
+                <div class="dashboard-grid-modern">
+                    <!-- Left Column (Wider) -->
+                    <div class="dashboard-left">
+                        
+                        <!-- Financial Overview -->
+                        <div class="card">
+                            <div class="card-header-flex">
+                                <h3><i class="fas fa-chart-line"></i> Financial Overview (This Month)</h3>
+                                <a href="{% url 'rent_collection' %}" class="btn-sm-primary">View Details</a>
                             </div>
-                            <div class="payment-item">
-                                <div class="payment-amount">Ksh.{{ payment_summary.additional.amount|default:"0" }}</div>
-                                <div class="payment-label">Additional Services</div>
-                            </div>
-                            <div class="payment-item">
-                                <div class="payment-amount">Ksh.{{ payment_summary.maintenance.amount|default:"0" }}</div>
-                                <div class="payment-label">Maintenance</div>
-                            </div>
-                            <div class="payment-item">
-                                <div class="payment-amount">Ksh.{{ payment_summary.debt.amount|default:"0" }}</div>
-                                <div class="payment-label error">Debt</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- New Requests Card -->
-                    <div class="card requests-card">
-                        <h3>New Requests</h3>
-                        <div class="requests-list">
-                            {% for request in new_requests %}
-                            <div class="request-item">
-                                <div class="request-avatar">
-                                    <i class="fas fa-user"></i>
+                            <div class="financial-grid">
+                                <div class="financial-item">
+                                    <div class="financial-label">Expected Revenue</div>
+                                    <div class="financial-amount">Ksh.{{ financial_summary.expected }}</div>
                                 </div>
-                                <div class="request-info">
-                                    <div class="request-name">{{ request.resident.user.get_full_name }}</div>
-                                    <div class="request-unit">Unit {{ request.resident.unit_number }}</div>
-                                    <div class="request-text">{{ request.description|truncatewords:10 }}</div>
+                                <div class="financial-item">
+                                    <div class="financial-label">Collected</div>
+                                    <div class="financial-amount success">Ksh.{{ financial_summary.collected }}</div>
+                                </div>
+                                <div class="financial-item">
+                                    <div class="financial-label">Outstanding</div>
+                                    <div class="financial-amount warning">Ksh.{{ financial_summary.outstanding }}</div>
+                                </div>
+                                <div class="financial-item">
+                                    <div class="financial-label">Overdue</div>
+                                    <div class="financial-amount danger">Ksh.{{ financial_summary.overdue }}</div>
                                 </div>
                             </div>
-                            {% endfor %}
+                            <div class="progress-bar-modern">
+                                <div class="progress-fill-modern" style="width: {{ financial_summary.collection_percentage }}%;"></div>
+                            </div>
+                            <div class="progress-label-modern">{{ financial_summary.collection_percentage }}% Collection Rate</div>
                         </div>
-                    </div>
-                    
-                    <!-- Delayed Work Orders -->
-                    <div class="card delayed-orders-card">
-                        <h3>Delayed Work Orders</h3>
-                        <table class="orders-table">
-                            <tbody>
+
+                        <!-- Delayed Work Orders -->
+                        <div class="card">
+                            <div class="card-header-flex">
+                                <h3><i class="fas fa-clock"></i> Delayed Work Orders</h3>
+                                <a href="{% url 'services' %}?status=delayed" class="btn-sm-primary">View All</a>
+                            </div>
+                            {% if delayed_orders %}
+                            <div class="work-orders-list">
                                 {% for order in delayed_orders %}
-                                <tr>
-                                    <td>{{ order.order_id }}</td>
-                                    <td>Unit {{ order.unit_number }}</td>
-                                    <td>{{ order.category }}</td>
-                                    <td>
-                                        <div class="assigned-user">
-                                            <i class="fas fa-user"></i>
-                                            {{ order.assigned_to }}
-                                        </div>
-                                    </td>
-                                    <td>{{ order.days_late }} day{{ order.days_late|pluralize }} late</td>
-                                    <td><span class="badge urgent">Urgent</span></td>
-                                </tr>
+                                <div class="work-order-item delayed">
+                                    <div class="work-order-header">
+                                        <span class="order-id">{{ order.order_id }}</span>
+                                        <span class="badge urgent">{{ order.days_late }} days late</span>
+                                    </div>
+                                    <div class="work-order-details">
+                                        <div><i class="fas fa-home"></i> Unit {{ order.unit_number }}</div>
+                                        <div><i class="fas fa-tools"></i> {{ order.get_category_display }}</div>
+                                        <div><i class="fas fa-user-tie"></i> {{ order.contractor_name }}</div>
+                                    </div>
+                                    <div class="work-order-title">{{ order.title }}</div>
+                                </div>
                                 {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Upcoming Units -->
-                    <div class="card upcoming-units-card">
-                        <div class="card-header">
-                            <h3>Upcoming Units</h3>
-                            <a href="#" class="view-all">→</a>
-                        </div>
-                        <div class="units-grid">
-                            {% for unit in upcoming_units %}
-                            <div class="unit-item">
-                                {% if unit.image %}
-                                <img src="{{ unit.image.url }}" alt="Unit {{ unit.unit_number }}">
-                                {% else %}
-                                <div style="background: #e5e7eb; height: 100%;"></div>
-                                {% endif %}
                             </div>
-                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-check-circle"></i>
+                                <p>No delayed work orders!</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Recent Tenant Requests -->
+                        <div class="card">
+                            <div class="card-header-flex">
+                                <h3><i class="fas fa-clipboard-list"></i> Recent Tenant Requests</h3>
+                                <a href="{% url 'services' %}" class="btn-sm-primary">View All</a>
+                            </div>
+                            {% if recent_requests %}
+                            <div class="requests-list-modern">
+                                {% for request in recent_requests %}
+                                <div class="request-item-modern">
+                                    <div class="request-avatar-modern">
+                                        {{ request.tenant_initials }}
+                                    </div>
+                                    <div class="request-content">
+                                        <div class="request-header-flex">
+                                            <strong>{{ request.tenant_name }}</strong>
+                                            <span class="request-time">{{ request.time_ago }}</span>
+                                        </div>
+                                        <div class="request-unit">Unit {{ request.unit_number }}</div>
+                                        <div class="request-description">{{ request.description }}</div>
+                                    </div>
+                                    <div class="request-status">
+                                        <span class="status-badge {{ request.priority }}">{{ request.get_priority_display }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>No pending requests</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Right Column (Narrower) -->
+                    <div class="dashboard-right">
+                        
+                        <!-- Quick Actions -->
+                        <div class="card">
+                            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                            <div class="quick-actions-grid">
+                                <a href="{% url 'tenants' %}" class="quick-action-btn">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span>Add Tenant</span>
+                                </a>
+                                <a href="{% url 'services' %}" class="quick-action-btn">
+                                    <i class="fas fa-wrench"></i>
+                                    <span>Create Work Order</span>
+                                </a>
+                                <a href="{% url 'rent_collection' %}" class="quick-action-btn">
+                                    <i class="fas fa-file-invoice"></i>
+                                    <span>Generate Invoices</span>
+                                </a>
+                                <a href="{% url 'reports' %}" class="quick-action-btn">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>View Reports</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Work Orders Summary -->
+                        <div class="card">
+                            <h3><i class="fas fa-tasks"></i> Work Orders Status</h3>
+                            <div class="work-order-stats">
+                                <div class="wo-stat-item">
+                                    <div class="wo-stat-number">{{ work_order_stats.new }}</div>
+                                    <div class="wo-stat-label">New</div>
+                                    <div class="wo-stat-bar" style="background: #3b82f6; width: {{ work_order_stats.new_percent }}%;"></div>
+                                </div>
+                                <div class="wo-stat-item">
+                                    <div class="wo-stat-number">{{ work_order_stats.open }}</div>
+                                    <div class="wo-stat-label">Open</div>
+                                    <div class="wo-stat-bar" style="background: #a855f7; width: {{ work_order_stats.open_percent }}%;"></div>
+                                </div>
+                                <div class="wo-stat-item">
+                                    <div class="wo-stat-number">{{ work_order_stats.in_progress }}</div>
+                                    <div class="wo-stat-label">In Progress</div>
+                                    <div class="wo-stat-bar" style="background: #f59e0b; width: {{ work_order_stats.in_progress_percent }}%;"></div>
+                                </div>
+                                <div class="wo-stat-item">
+                                    <div class="wo-stat-number">{{ work_order_stats.delayed }}</div>
+                                    <div class="wo-stat-label">Delayed</div>
+                                    <div class="wo-stat-bar" style="background: #ef4444; width: {{ work_order_stats.delayed_percent }}%;"></div>
+                                </div>
+                                <div class="wo-stat-item">
+                                    <div class="wo-stat-number">{{ work_order_stats.completed }}</div>
+                                    <div class="wo-stat-label">Completed</div>
+                                    <div class="wo-stat-bar" style="background: #10b981; width: {{ work_order_stats.completed_percent }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vacant Units -->
+                        <div class="card">
+                            <div class="card-header-flex">
+                                <h3><i class="fas fa-door-open"></i> Vacant Units</h3>
+                                <span class="badge-count">{{ vacant_units|length }}</span>
+                            </div>
+                            {% if vacant_units %}
+                            <div class="vacant-units-list">
+                                {% for unit in vacant_units %}
+                                <div class="vacant-unit-item">
+                                    <div class="vacant-unit-number">{{ unit.unit_number }}</div>
+                                    <div class="vacant-unit-info">
+                                        <div>{{ unit.get_unit_type_display }}</div>
+                                        <div class="vacant-unit-rent">Ksh.{{ unit.rent_amount }}/mo</div>
+                                    </div>
+                                    <a href="{% url 'building' %}" class="btn-icon-sm" title="Assign Tenant">
+                                        <i class="fas fa-user-plus"></i>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-check-circle"></i>
+                                <p>All units occupied!</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Top Performing Contractors -->
+                        <div class="card">
+                            <h3><i class="fas fa-star"></i> Top Contractors</h3>
+                            <div class="contractors-list">
+                                {% for contractor in top_contractors %}
+                                <div class="contractor-item-mini">
+                                    <div class="contractor-avatar-mini">
+                                        {{ contractor.initials }}
+                                    </div>
+                                    <div class="contractor-info-mini">
+                                        <strong>{{ contractor.name }}</strong>
+                                        <div class="contractor-meta">
+                                            <span class="category-badge category-{{ contractor.category }}">
+                                                {{ contractor.get_category_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="contractor-rating">
+                                        <i class="fas fa-star" style="color: #fbbf24;"></i>
+                                        {{ contractor.rating }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -289,5 +410,6 @@
     </div>
     
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
 </body>
 </html>

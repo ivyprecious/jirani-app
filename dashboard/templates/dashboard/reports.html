@@ -147,18 +147,18 @@
                                 <i class="fas fa-money-bill-wave"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-number">Ksh.{{ financial_data.total_collected|floatformat:0 }}</div>
+                                <div class="stat-number">Ksh.{{ financial_data.total_collected }}</div>
                                 <div class="stat-label">Total Collected</div>
                             </div>
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-icon" style="background: #f59e0b;">
-                                <i class="fas fa-clock"></i>
+                            <div class="stat-icon" style="background: #667eea;">
+                                <i class="fas fa-wallet"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-number">Ksh.{{ financial_data.outstanding|floatformat:0 }}</div>
-                                <div class="stat-label">Outstanding</div>
+                                <div class="stat-number">Ksh.{{ financial_data.total_expected }}</div>
+                                <div class="stat-label">Expected (Dec 2025)</div>
                             </div>
                         </div>
 
@@ -167,13 +167,13 @@
                                 <i class="fas fa-exclamation-triangle"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-number">Ksh.{{ financial_data.overdue|floatformat:0 }}</div>
+                                <div class="stat-number">Ksh.{{ financial_data.overdue }}</div>
                                 <div class="stat-label">Overdue</div>
                             </div>
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-icon" style="background: #667eea;">
+                            <div class="stat-icon" style="background: #8b5cf6;">
                                 <i class="fas fa-chart-pie"></i>
                             </div>
                             <div class="stat-content">
@@ -217,7 +217,7 @@
                                         <td>{{ payment.paid_date|date:"M d, Y" }}</td>
                                         <td>{{ payment.resident.user.get_full_name }}</td>
                                         <td><span class="unit-badge">{{ payment.resident.unit_number }}</span></td>
-                                        <td><strong>Ksh.{{ payment.amount_paid }}</strong></td>
+                                        <td><strong>Ksh.{{ payment.amount_paid_formatted }}</strong></td>
                                         <td>{{ payment.get_payment_method_display }}</td>
                                         <td><span class="status-badge {{ payment.status }}">{{ payment.get_status_display }}</span></td>
                                     </tr>
@@ -420,8 +420,8 @@
                                         <td>{{ tenant.move_in_date|date:"M d, Y" }}</td>
                                         <td><strong>Ksh.{{ tenant.monthly_rent }}</strong></td>
                                         <td>{{ tenant.payment_count }}</td>
-                                        <td class="{% if tenant.outstanding > 0 %}text-danger{% endif %}">
-                                            Ksh.{{ tenant.outstanding|floatformat:0 }}
+                                        <td class="{% if tenant.outstanding_raw > 0 %}text-danger{% endif %}">
+                                            Ksh.{{ tenant.outstanding }}
                                         </td>
                                         <td><span class="status-badge {{ tenant.status }}">{{ tenant.get_status_display }}</span></td>
                                     </tr>

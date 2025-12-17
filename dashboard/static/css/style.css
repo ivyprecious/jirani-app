@@ -2286,3 +2286,534 @@ body {
         page-break-inside: avoid;
     }
 }
+
+/* ========================================
+   MODERN DASHBOARD STYLES
+   Add these to your style.css
+   ======================================== */
+
+.dashboard-page {
+    padding: 24px 32px;
+    overflow-y: auto;
+    height: calc(100vh - 73px);
+}
+
+/* Sidebar Section */
+.sidebar-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px 12px;
+}
+
+.section-header h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.message-time {
+    font-size: 10px;
+    color: #9ca3af;
+    white-space: nowrap;
+}
+
+/* Stat Change Indicators */
+.stat-change {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.stat-change.positive {
+    color: #10b981;
+}
+
+.stat-change.negative {
+    color: #ef4444;
+}
+
+.stat-change i {
+    font-size: 10px;
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid-modern {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+}
+
+.dashboard-left,
+.dashboard-right {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Card Header Flex */
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.card-header-flex h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-sm-primary {
+    padding: 6px 12px;
+    background: #667eea;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-sm-primary:hover {
+    background: #5568d3;
+    transform: translateY(-1px);
+}
+
+/* Financial Grid */
+.financial-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.financial-item {
+    text-align: center;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.financial-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.financial-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.financial-amount.success {
+    color: #10b981;
+}
+
+.financial-amount.warning {
+    color: #f59e0b;
+}
+
+.financial-amount.danger {
+    color: #ef4444;
+}
+
+/* Modern Progress Bar */
+.progress-bar-modern {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill-modern {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #667eea 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-label-modern {
+    font-size: 12px;
+    color: #6b7280;
+    text-align: center;
+}
+
+/* Work Orders List */
+.work-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.work-order-item {
+    padding: 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.work-order-item:hover {
+    border-color: #667eea;
+    transform: translateX(4px);
+}
+
+.work-order-item.delayed {
+    border-left: 4px solid #ef4444;
+}
+
+.work-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.order-id {
+    font-weight: 700;
+    color: #1f2937;
+    font-family: monospace;
+}
+
+.work-order-details {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.work-order-details i {
+    margin-right: 4px;
+    color: #9ca3af;
+}
+
+.work-order-title {
+    font-size: 14px;
+    color: #4b5563;
+}
+
+/* Requests List Modern */
+.requests-list-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.request-item-modern {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.request-item-modern:hover {
+    background: #f3f4f6;
+}
+
+.request-avatar-modern {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.request-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.request-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.request-time {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.request-unit {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.request-description {
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.request-status {
+    display: flex;
+    align-items: center;
+}
+
+/* Quick Actions */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1f2937;
+    transition: all 0.2s;
+}
+
+.quick-action-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.quick-action-btn i {
+    font-size: 24px;
+}
+
+.quick-action-btn span {
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Work Order Stats */
+.work-order-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.wo-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wo-stat-number {
+    width: 40px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.wo-stat-label {
+    width: 100px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.wo-stat-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+}
+
+/* Vacant Units List */
+.vacant-units-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vacant-unit-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.vacant-unit-item:hover {
+    background: #f3f4f6;
+}
+
+.vacant-unit-number {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.vacant-unit-info {
+    flex: 1;
+}
+
+.vacant-unit-info > div:first-child {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.vacant-unit-rent {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.btn-icon-sm {
+    width: 32px;
+    height: 32px;
+    background: #667eea;
+    color: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-icon-sm:hover {
+    background: #5568d3;
+    transform: scale(1.1);
+}
+
+/* Contractors Mini List */
+.contractors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.contractor-item-mini {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.contractor-avatar-mini {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.contractor-info-mini {
+    flex: 1;
+    min-width: 0;
+}
+
+.contractor-info-mini strong {
+    display: block;
+    font-size: 13px;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.contractor-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contractor-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.3;
+}
+
+.empty-state p {
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .dashboard-grid-modern {
+        grid-template-columns: 1fr;
+    }
+    
+    .financial-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-page {
+        padding: 16px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .financial-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+}

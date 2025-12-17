@@ -12,64 +12,270 @@ from decimal import Decimal
 
 @login_required
 def dashboard_view(request):
-    # Get current resident
-    try:
-        resident = Resident.objects.get(user=request.user)
-    except Resident.DoesNotExist:
-        messages.error(request, "Resident profile not found")
-        return redirect('login')
+    from datetime import date, timedelta
+    from django.db.models import Sum, Count, Q, Max
+    from decimal import Decimal
     
-    # Get payment summary
-    current_month = date.today().month
-    payments = Payment.objects.filter(
-        resident=resident,
-        due_date__month=current_month
+    # Helper function for formatting currency
+    def format_currency(amount):
+        return "{:,.0f}".format(float(amount))
+    
+    # Helper function for time ago
+    def time_ago(dt):
+        if not dt:
+            return "Recently"
+        
+        from django.utils import timezone
+        now = timezone.now()
+        
+        # Convert to datetime if it's a date
+        if isinstance(dt, date) and not isinstance(dt, datetime):
+            dt = datetime.combine(dt, datetime.min.time())
+        
+        # Make datetime timezone-aware if it's naive
+        if dt.tzinfo is None:
+            dt = timezone.make_aware(dt)
+        
+        diff = now - dt
+        
+        if diff.days > 0:
+            return f"{diff.days}d ago"
+        elif diff.seconds >= 3600:
+            return f"{diff.seconds // 3600}h ago"
+        elif diff.seconds >= 60:
+            return f"{diff.seconds // 60}m ago"
+        else:
+            return "Just now"
+    
+    # Get current month data
+    today = date.today()
+    current_month_start = today.replace(day=1)
+    
+    # ========================================
+    # KEY METRICS
+    # ========================================
+    
+    total_units = Unit.objects.count()
+    total_residents = Resident.objects.filter(is_active=True, status='active').count()
+    occupied_units = Unit.objects.filter(status='occupied').count()
+    
+    occupancy_rate = 0
+    if total_units > 0:
+        occupancy_rate = round((occupied_units / total_units) * 100, 1)
+    
+    # New tenants this month
+    new_this_month = Resident.objects.filter(
+        move_in_date__gte=current_month_start,
+        status='active'
+    ).count()
+    
+    # Monthly revenue
+    current_month_payments = Payment.objects.filter(
+        due_date__gte=current_month_start,
+        payment_type='rent'
     )
     
-    payment_summary = {
-        'rent': payments.filter(payment_type='rent').first(),
-        'additional': payments.filter(payment_type='additional').first(),
-        'maintenance': payments.filter(payment_type='maintenance').first(),
-        'debt': payments.filter(payment_type='debt').first(),
+    monthly_revenue = current_month_payments.aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0')
+    
+    collected = current_month_payments.filter(status='paid').aggregate(
+        total=Sum('amount_paid')
+    )['total'] or Decimal('0')
+    
+    collection_rate = 0
+    if monthly_revenue > 0:
+        collection_rate = round((collected / monthly_revenue) * 100, 1)
+    
+    # Pending issues (work orders)
+    pending_issues = WorkOrder.objects.filter(
+        status__in=['new', 'open', 'in_progress', 'delayed']
+    ).count()
+    
+    urgent_count = WorkOrder.objects.filter(
+        priority='urgent',
+        status__in=['new', 'open', 'in_progress', 'delayed']
+    ).count()
+    
+    # Parking utilization
+    total_parking = ParkingSlot.objects.count()
+    assigned_parking = ParkingSlot.objects.filter(status='assigned').count()
+    
+    parking_utilization = 0
+    if total_parking > 0:
+        parking_utilization = round((assigned_parking / total_parking) * 100, 1)
+    
+    available_parking = total_parking - assigned_parking
+    
+    dashboard_stats = {
+        'total_units': total_units,
+        'total_residents': total_residents,
+        'occupancy_rate': occupancy_rate,
+        'new_this_month': new_this_month,
+        'monthly_revenue': format_currency(monthly_revenue),
+        'collection_rate': collection_rate,
+        'pending_issues': pending_issues,
+        'urgent_count': urgent_count,
+        'parking_utilization': parking_utilization,
+        'available_parking': available_parking,
     }
     
-    # Get new requests
-    new_requests = Request.objects.filter(
-        status='pending'
-    ).order_by('-created_at')[:3]
+    # ========================================
+    # FINANCIAL SUMMARY
+    # ========================================
     
-    # Get delayed work orders
+    outstanding = current_month_payments.filter(
+        status__in=['pending', 'partial']
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+    
+    overdue = current_month_payments.filter(
+        status='overdue'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+    
+    collection_percentage = collection_rate
+    
+    financial_summary = {
+        'expected': format_currency(monthly_revenue),
+        'collected': format_currency(collected),
+        'outstanding': format_currency(outstanding),
+        'overdue': format_currency(overdue),
+        'collection_percentage': collection_percentage,
+    }
+    
+    # ========================================
+    # DELAYED WORK ORDERS
+    # ========================================
+    
     delayed_orders = WorkOrder.objects.filter(
         status='delayed'
-    ).order_by('-days_late')[:3]
+    ).select_related('assigned_to', 'resident').order_by('-days_late')[:5]
     
-    # Get statistics
-    stats = {
-        'total_residents': Resident.objects.filter(is_active=True).count(),
-        'total_units': Unit.objects.count(),
-        'vacant_units': Unit.objects.filter(status='vacant').count(),
-        'upcoming_units': Unit.objects.filter(status='upcoming').count(),
-    }
+    # ========================================
+    # RECENT TENANT REQUESTS (Simulated from work orders)
+    # ========================================
     
-    # Get work order statistics
+    recent_requests_qs = WorkOrder.objects.filter(
+        status__in=['new', 'open']
+    ).select_related('resident__user', 'assigned_to').order_by('-created_at')[:5]
+    
+    recent_requests = []
+    for wo in recent_requests_qs:
+        if wo.resident:
+            tenant_name = wo.resident.user.get_full_name()
+            tenant_initials = tenant_name[0] + (tenant_name.split()[-1][0] if len(tenant_name.split()) > 1 else '')
+        else:
+            tenant_name = "Unknown Tenant"
+            tenant_initials = "?"
+        
+        recent_requests.append({
+            'tenant_name': tenant_name,
+            'tenant_initials': tenant_initials,
+            'unit_number': wo.unit_number,
+            'description': wo.title,
+            'time_ago': time_ago(wo.created_at),
+            'priority': wo.priority,
+            'get_priority_display': wo.get_priority_display(),
+        })
+    
+    # ========================================
+    # WORK ORDER STATS
+    # ========================================
+    
+    wo_total = WorkOrder.objects.count() or 1  # Avoid division by zero
+    
+    wo_new = WorkOrder.objects.filter(status='new').count()
+    wo_open = WorkOrder.objects.filter(status='open').count()
+    wo_in_progress = WorkOrder.objects.filter(status='in_progress').count()
+    wo_delayed = WorkOrder.objects.filter(status='delayed').count()
+    wo_completed = WorkOrder.objects.filter(status='completed').count()
+    
     work_order_stats = {
-        'new': WorkOrder.objects.filter(status='new').count(),
-        'open': WorkOrder.objects.filter(status='open').count(),
-        'in_progress': WorkOrder.objects.filter(status='in_progress').count(),
-        'delayed': WorkOrder.objects.filter(status='delayed').count(),
+        'new': wo_new,
+        'open': wo_open,
+        'in_progress': wo_in_progress,
+        'delayed': wo_delayed,
+        'completed': wo_completed,
+        'new_percent': round((wo_new / wo_total) * 100, 0),
+        'open_percent': round((wo_open / wo_total) * 100, 0),
+        'in_progress_percent': round((wo_in_progress / wo_total) * 100, 0),
+        'delayed_percent': round((wo_delayed / wo_total) * 100, 0),
+        'completed_percent': round((wo_completed / wo_total) * 100, 0),
     }
     
-    # Get upcoming units
-    upcoming_units = Unit.objects.filter(status='vacant')[:3]
+    # ========================================
+    # VACANT UNITS
+    # ========================================
+    
+    vacant_units = Unit.objects.filter(status='vacant').order_by('unit_number')[:6]
+    
+    # Format rent amounts
+    for unit in vacant_units:
+        unit.rent_amount = format_currency(unit.rent_amount)
+    
+    # ========================================
+    # TOP CONTRACTORS
+    # ========================================
+    
+    top_contractors_qs = Subcontractor.objects.filter(
+        status='active'
+    ).annotate(
+        completed_jobs=Count('work_orders', filter=Q(work_orders__status='completed'))
+    ).order_by('-rating', '-completed_jobs')[:5]
+    
+    top_contractors = []
+    for contractor in top_contractors_qs:
+        name_parts = contractor.name.split()
+        initials = name_parts[0][0] + (name_parts[-1][0] if len(name_parts) > 1 else '')
+        
+        top_contractors.append({
+            'name': contractor.name,
+            'initials': initials,
+            'category': contractor.category,
+            'get_category_display': contractor.get_category_display(),
+            'rating': contractor.rating,
+        })
+    
+    # ========================================
+    # RECENT MESSAGES (Simulated)
+    # ========================================
+    
+    # Simulate recent messages from tenants
+    recent_messages = [
+        {
+            'sender_name': 'Grace Mwangi',
+            'sender_initials': 'GM',
+            'preview': 'Thank you for fixing the AC so quickly!',
+            'time_ago': '2h ago',
+        },
+        {
+            'sender_name': 'David Kimani',
+            'sender_initials': 'DK',
+            'preview': 'When can I expect the plumber to visit?',
+            'time_ago': '5h ago',
+        },
+        {
+            'sender_name': 'Aisha Hassan',
+            'sender_initials': 'AH',
+            'preview': 'Payment confirmation for December rent',
+            'time_ago': '1d ago',
+        },
+    ]
+    recent_messages_count = len(recent_messages)
+    
+    # ========================================
+    # CONTEXT
+    # ========================================
     
     context = {
-        'resident': resident,
-        'payment_summary': payment_summary,
-        'new_requests': new_requests,
+        'dashboard_stats': dashboard_stats,
+        'financial_summary': financial_summary,
         'delayed_orders': delayed_orders,
-        'stats': stats,
+        'recent_requests': recent_requests,
         'work_order_stats': work_order_stats,
-        'upcoming_units': upcoming_units,
+        'vacant_units': vacant_units,
+        'top_contractors': top_contractors,
+        'recent_messages': recent_messages,
+        'recent_messages_count': recent_messages_count,
     }
     
     return render(request, 'dashboard/dashboard.html', context)
@@ -998,10 +1204,7 @@ def delete_unit_view(request, unit_id):
 
 @login_required
 def reports(request):
-    """
-    Main reports page with financial, occupancy, maintenance, and tenant reports
-    """
-    
+   
     # Get period filter (default to current month)
     period = request.GET.get('period', 'current_month')
     
@@ -1039,15 +1242,8 @@ def reports(request):
         total=Sum('amount_paid')
     )['total'] or Decimal('0')
     
-    outstanding = payments.filter(
-        status__in=['pending', 'partial']
-    ).aggregate(
-        total=Sum('amount')
-    )['total'] or Decimal('0')
-    
-    overdue = payments.filter(
-        status='overdue'
-    ).aggregate(
+    # Get overdue AMOUNT (not count)
+    overdue = payments.filter(status='overdue').aggregate(
         total=Sum('amount')
     )['total'] or Decimal('0')
     
@@ -1059,10 +1255,14 @@ def reports(request):
     if total_expected > 0:
         collection_rate = round((total_collected / total_expected) * 100, 1)
     
+    # Format numbers with commas
+    def format_currency(amount):
+        return "{:,.0f}".format(float(amount))
+    
     financial_data = {
-        'total_collected': total_collected,
-        'outstanding': outstanding,
-        'overdue': overdue,
+        'total_collected': format_currency(total_collected),
+        'total_expected': format_currency(total_expected),
+        'overdue': format_currency(overdue),
         'collection_rate': collection_rate,
     }
     
@@ -1071,6 +1271,10 @@ def reports(request):
         paid=True,
         paid_date__isnull=False
     ).select_related('resident__user').order_by('-paid_date')[:10]
+    
+    # Format payment amounts with commas
+    for payment in recent_payments:
+        payment.amount_paid_formatted = "{:,.0f}".format(float(payment.amount_paid))
     
     # ========================================
     # OCCUPANCY DATA
@@ -1145,9 +1349,10 @@ def reports(request):
             'user': resident.user,
             'unit_number': resident.unit_number,
             'move_in_date': resident.move_in_date,
-            'monthly_rent': resident.monthly_rent,
+            'monthly_rent': "{:,.0f}".format(float(resident.monthly_rent)),
             'payment_count': payment_count,
-            'outstanding': outstanding_amount,
+            'outstanding': "{:,.0f}".format(float(outstanding_amount)),
+            'outstanding_raw': outstanding_amount,  # For comparison
             'status': resident.status,
             'get_status_display': resident.get_status_display,
         }
@@ -1174,12 +1379,6 @@ def reports(request):
 
 @login_required
 def export_report(request, report_type, file_format):
-    """
-    Export reports to PDF or Excel
-    TODO: Implement actual export functionality
-    """
-    # This is a placeholder - implement actual export logic
-    # using libraries like ReportLab (PDF) or openpyxl (Excel)
     
     from django.http import HttpResponse
     
