@@ -2298,6 +2298,35 @@ body {
     height: calc(100vh - 73px);
 }
 
+/* Center Nav Links in Header */
+.nav-links-center {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.nav-links-center .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.nav-links-center .nav-link:hover {
+    background: #f3f4f6;
+    color: #667eea;
+}
+
+.nav-links-center .nav-link i {
+    font-size: 16px;
+}
+
 /* Sidebar Section */
 .sidebar-section {
     margin-top: 24px;
@@ -2647,72 +2676,58 @@ body {
     border-radius: 4px;
 }
 
-/* Vacant Units List */
-.vacant-units-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.vacant-unit-item {
-    display: flex;
-    align-items: center;
+/* Vacant Units Gallery */
+.vacant-units-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
+    margin-bottom: 16px;
+}
+
+.vacant-unit-image {
+    aspect-ratio: 16 / 10;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.vacant-unit-image:hover {
+    transform: scale(1.05);
+}
+
+.image-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 12px;
-    background: #f9fafb;
-    border-radius: 8px;
-    transition: all 0.2s;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
 }
 
-.vacant-unit-item:hover {
-    background: #f3f4f6;
-}
-
-.vacant-unit-number {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 8px;
+.btn-view-vacant {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.vacant-unit-info {
-    flex: 1;
-}
-
-.vacant-unit-info > div:first-child {
-    font-size: 13px;
-    color: #6b7280;
-    margin-bottom: 4px;
-}
-
-.vacant-unit-rent {
+    border-radius: 8px;
+    text-decoration: none;
     font-size: 14px;
     font-weight: 600;
-    color: #1f2937;
-}
-
-.btn-icon-sm {
-    width: 32px;
-    height: 32px;
-    background: #667eea;
-    color: white;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
     transition: all 0.2s;
 }
 
-.btn-icon-sm:hover {
-    background: #5568d3;
-    transform: scale(1.1);
+.btn-view-vacant:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 /* Contractors Mini List */

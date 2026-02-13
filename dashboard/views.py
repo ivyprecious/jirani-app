@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
-
 @login_required
 def dashboard_view(request):
     from datetime import date, timedelta
@@ -69,24 +68,6 @@ def dashboard_view(request):
         status='active'
     ).count()
     
-    # Monthly revenue
-    current_month_payments = Payment.objects.filter(
-        due_date__gte=current_month_start,
-        payment_type='rent'
-    )
-    
-    monthly_revenue = current_month_payments.aggregate(
-        total=Sum('amount')
-    )['total'] or Decimal('0')
-    
-    collected = current_month_payments.filter(status='paid').aggregate(
-        total=Sum('amount_paid')
-    )['total'] or Decimal('0')
-    
-    collection_rate = 0
-    if monthly_revenue > 0:
-        collection_rate = round((collected / monthly_revenue) * 100, 1)
-    
     # Pending issues (work orders)
     pending_issues = WorkOrder.objects.filter(
         status__in=['new', 'open', 'in_progress', 'delayed']
@@ -112,8 +93,6 @@ def dashboard_view(request):
         'total_residents': total_residents,
         'occupancy_rate': occupancy_rate,
         'new_this_month': new_this_month,
-        'monthly_revenue': format_currency(monthly_revenue),
-        'collection_rate': collection_rate,
         'pending_issues': pending_issues,
         'urgent_count': urgent_count,
         'parking_utilization': parking_utilization,
@@ -121,26 +100,10 @@ def dashboard_view(request):
     }
     
     # ========================================
-    # FINANCIAL SUMMARY
+    # VACANT UNITS COUNT
     # ========================================
     
-    outstanding = current_month_payments.filter(
-        status__in=['pending', 'partial']
-    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
-    
-    overdue = current_month_payments.filter(
-        status='overdue'
-    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
-    
-    collection_percentage = collection_rate
-    
-    financial_summary = {
-        'expected': format_currency(monthly_revenue),
-        'collected': format_currency(collected),
-        'outstanding': format_currency(outstanding),
-        'overdue': format_currency(overdue),
-        'collection_percentage': collection_percentage,
-    }
+    vacant_units_count = Unit.objects.filter(status='vacant').count()
     
     # ========================================
     # DELAYED WORK ORDERS
@@ -151,7 +114,7 @@ def dashboard_view(request):
     ).select_related('assigned_to', 'resident').order_by('-days_late')[:5]
     
     # ========================================
-    # RECENT TENANT REQUESTS (Simulated from work orders)
+    # RECENT TENANT REQUESTS
     # ========================================
     
     recent_requests_qs = WorkOrder.objects.filter(
@@ -181,7 +144,7 @@ def dashboard_view(request):
     # WORK ORDER STATS
     # ========================================
     
-    wo_total = WorkOrder.objects.count() or 1  # Avoid division by zero
+    wo_total = WorkOrder.objects.count() or 1
     
     wo_new = WorkOrder.objects.filter(status='new').count()
     wo_open = WorkOrder.objects.filter(status='open').count()
@@ -201,16 +164,6 @@ def dashboard_view(request):
         'delayed_percent': round((wo_delayed / wo_total) * 100, 0),
         'completed_percent': round((wo_completed / wo_total) * 100, 0),
     }
-    
-    # ========================================
-    # VACANT UNITS
-    # ========================================
-    
-    vacant_units = Unit.objects.filter(status='vacant').order_by('unit_number')[:6]
-    
-    # Format rent amounts
-    for unit in vacant_units:
-        unit.rent_amount = format_currency(unit.rent_amount)
     
     # ========================================
     # TOP CONTRACTORS
@@ -236,10 +189,9 @@ def dashboard_view(request):
         })
     
     # ========================================
-    # RECENT MESSAGES (Simulated)
+    # RECENT MESSAGES
     # ========================================
     
-    # Simulate recent messages from tenants
     recent_messages = [
         {
             'sender_name': 'Grace Mwangi',
@@ -260,7 +212,6 @@ def dashboard_view(request):
             'time_ago': '1d ago',
         },
     ]
-    recent_messages_count = len(recent_messages)
     
     # ========================================
     # CONTEXT
@@ -268,14 +219,12 @@ def dashboard_view(request):
     
     context = {
         'dashboard_stats': dashboard_stats,
-        'financial_summary': financial_summary,
+        'vacant_units_count': vacant_units_count,
         'delayed_orders': delayed_orders,
         'recent_requests': recent_requests,
         'work_order_stats': work_order_stats,
-        'vacant_units': vacant_units,
         'top_contractors': top_contractors,
         'recent_messages': recent_messages,
-        'recent_messages_count': recent_messages_count,
     }
     
     return render(request, 'dashboard/dashboard.html', context)

@@ -54,7 +54,6 @@
             <div class="sidebar-section">
                 <div class="section-header">
                     <h4>Recent Messages</h4>
-                    <span class="badge-count">{{ recent_messages_count }}</span>
                 </div>
                 <div class="contacts-list">
                     {% for message in recent_messages %}
@@ -77,9 +76,16 @@
         <main class="main-content">
             <!-- Top Navigation -->
             <header class="top-nav">
-                <div>
-                    <h2 style="font-size: 24px; font-weight: 700; color: #1f2937;">Dashboard Overview</h2>
-                    <p style="font-size: 14px; color: #6b7280; margin-top: 4px;">Welcome back, {{ user.get_full_name }}!</p>
+                <h2 style="font-size: 24px; font-weight: 700; color: #1f2937;">Dashboard Overview</h2>
+                
+                <!-- Center Nav Links -->
+                <div class="nav-links-center">
+                    <a href="{% url 'services' %}" class="nav-link">
+                        <i class="fas fa-tools"></i> Work Orders
+                    </a>
+                    <a href="{% url 'rent_collection' %}" class="nav-link">
+                        <i class="fas fa-file-invoice-dollar"></i> Rent Collection
+                    </a>
                 </div>
                 
                 <div class="user-section">
@@ -110,6 +116,23 @@
                             <i class="fas fa-user-circle"></i>
                             <span>My Profile</span>
                         </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>Messages</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Help & Support</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
                         <a href="{% url 'logout' %}" class="dropdown-item logout">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Log Out</span>
@@ -119,10 +142,10 @@
             </header>
             
             <!-- Dashboard Content -->
-            <div class="dashboard-page">
+            <div class="dashboard-page" style="padding-top: 24px;">
                 
                 <!-- Key Metrics Grid -->
-                <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 24px;">
+                <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
                     <div class="stat-card">
                         <div class="stat-icon" style="background: #667eea;">
                             <i class="fas fa-building"></i>
@@ -145,19 +168,6 @@
                             <div class="stat-label">Active Tenants</div>
                             <div class="stat-change positive">
                                 <i class="fas fa-arrow-up"></i> {{ dashboard_stats.new_this_month }} new
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: #f59e0b;">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number">Ksh.{{ dashboard_stats.monthly_revenue }}</div>
-                            <div class="stat-label">Monthly Revenue</div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i> {{ dashboard_stats.collection_rate }}% collected
                             </div>
                         </div>
                     </div>
@@ -193,36 +203,6 @@
                 <div class="dashboard-grid-modern">
                     <!-- Left Column (Wider) -->
                     <div class="dashboard-left">
-                        
-                        <!-- Financial Overview -->
-                        <div class="card">
-                            <div class="card-header-flex">
-                                <h3><i class="fas fa-chart-line"></i> Financial Overview (This Month)</h3>
-                                <a href="{% url 'rent_collection' %}" class="btn-sm-primary">View Details</a>
-                            </div>
-                            <div class="financial-grid">
-                                <div class="financial-item">
-                                    <div class="financial-label">Expected Revenue</div>
-                                    <div class="financial-amount">Ksh.{{ financial_summary.expected }}</div>
-                                </div>
-                                <div class="financial-item">
-                                    <div class="financial-label">Collected</div>
-                                    <div class="financial-amount success">Ksh.{{ financial_summary.collected }}</div>
-                                </div>
-                                <div class="financial-item">
-                                    <div class="financial-label">Outstanding</div>
-                                    <div class="financial-amount warning">Ksh.{{ financial_summary.outstanding }}</div>
-                                </div>
-                                <div class="financial-item">
-                                    <div class="financial-label">Overdue</div>
-                                    <div class="financial-amount danger">Ksh.{{ financial_summary.overdue }}</div>
-                                </div>
-                            </div>
-                            <div class="progress-bar-modern">
-                                <div class="progress-fill-modern" style="width: {{ financial_summary.collection_percentage }}%;"></div>
-                            </div>
-                            <div class="progress-label-modern">{{ financial_summary.collection_percentage }}% Collection Rate</div>
-                        </div>
 
                         <!-- Delayed Work Orders -->
                         <div class="card">
@@ -353,29 +333,21 @@
                         <div class="card">
                             <div class="card-header-flex">
                                 <h3><i class="fas fa-door-open"></i> Vacant Units</h3>
-                                <span class="badge-count">{{ vacant_units|length }}</span>
                             </div>
-                            {% if vacant_units %}
-                            <div class="vacant-units-list">
-                                {% for unit in vacant_units %}
-                                <div class="vacant-unit-item">
-                                    <div class="vacant-unit-number">{{ unit.unit_number }}</div>
-                                    <div class="vacant-unit-info">
-                                        <div>{{ unit.get_unit_type_display }}</div>
-                                        <div class="vacant-unit-rent">Ksh.{{ unit.rent_amount }}/mo</div>
-                                    </div>
-                                    <a href="{% url 'building' %}" class="btn-icon-sm" title="Assign Tenant">
-                                        <i class="fas fa-user-plus"></i>
-                                    </a>
+                            <div class="vacant-units-gallery">
+                                <div class="vacant-unit-image" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'); background-size: cover; background-position: center;">
+                                    <div class="image-overlay">Modern Apartments</div>
                                 </div>
-                                {% endfor %}
+                                <div class="vacant-unit-image" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400'); background-size: cover; background-position: center;">
+                                    <div class="image-overlay">Spacious Interiors</div>
+                                </div>
+                                <div class="vacant-unit-image" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400'); background-size: cover; background-position: center;">
+                                    <div class="image-overlay">Ready to Move In</div>
+                                </div>
                             </div>
-                            {% else %}
-                            <div class="empty-state">
-                                <i class="fas fa-check-circle"></i>
-                                <p>All units occupied!</p>
-                            </div>
-                            {% endif %}
+                            <a href="{% url 'building' %}?status=vacant" class="btn-view-vacant">
+                                <i class="fas fa-arrow-right"></i> View All Vacant Units
+                            </a>
                         </div>
 
                         <!-- Top Performing Contractors -->
@@ -410,6 +382,5 @@
     </div>
     
     <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/dashboard.js' %}"></script>
 </body>
 </html>
